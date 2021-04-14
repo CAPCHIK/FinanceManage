@@ -24,7 +24,7 @@ jobs:
       - name: Build
         run: dotnet nuke
       - name: Build docker image
-        run: docker build -t fin-manage ./deploy
+        run: docker build -t $IMAGE_NAME ./deploy
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 

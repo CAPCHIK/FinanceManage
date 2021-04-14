@@ -56,4 +56,4 @@ jobs:
           docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
           docker tag $IMAGE_NAME $IMAGE_ID:build-$BUILD_NUMBER
           docker push $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$IMAGE_ID:build-$BUILD_NUMBER
+          docker push $IMAGE_ID:build-$BUILD_NUMBER

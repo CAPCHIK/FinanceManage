@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 env:
-  IMAGE_NAME: server
+  IMAGE_ID: docker.pkg.github.com/capchik/financemanage/server
 
 jobs:
   build:
@@ -37,23 +37,16 @@ jobs:
       - name: Push image
         if: ${{ github.ref == 'refs/heads/master' }}
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-
-          # Change all uppercase to lowercase
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
-
           echo IMAGE_ID=$IMAGE_ID
-          echo VERSION=$VERSION
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
+
+          docker tag $IMAGE_NAME $IMAGE_ID:latest
           docker tag $IMAGE_NAME $IMAGE_ID:build-$BUILD_NUMBER
-          docker push $IMAGE_ID:$VERSION
+          docker push $IMAGE_ID:latest
           docker push $IMAGE_ID:build-$BUILD_NUMBER
+      - name: Deploy to swarm
+        uses: sagebind/docker-swarm-deploy-action@v2
+        with:
+          remote_host: ssh://user@fin-manage.ru
+          ssh_private_key: ${{ secrets.DOCKER_SSH_PRIVATE_KEY }}
+          ssh_public_key: ${{ secrets.DOCKER_SSH_PUBLIC_KEY }}
+          args: service update --image $IMAGE_ID:build-$BUILD_NUMBER fin-manage_server

@@ -46,11 +46,9 @@ jobs:
       - name: Update service
         if: ${{ github.ref == 'refs/heads/master' }}
         uses: appleboy/ssh-action@master
-        env:
-          IMAGE: "$IMAGE_ID:build-$BUILD_NUMBER"
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: IMAGE
-          script: docker service update --image $IMAGE fin-manage_server
+          envs: IMAGE_ID,BUILD_NUMBER
+          script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER fin-manage_server

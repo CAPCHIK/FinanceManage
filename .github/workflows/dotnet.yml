@@ -21,3 +21,6 @@ jobs:
       run: dotnet tool restore
     - name: Build
       run: dotnet nuke
+    - name: Build docker image
+      run: docker build -t fin-manage ./deploy
+      

@@ -15,8 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: try invoke ssh
-        uses: appleboy/ssh-action@master
       - name: Generate build number
         uses: einaregilsson/build-number@v3
         with:
@@ -45,6 +43,9 @@ jobs:
           docker tag $IMAGE_ID $IMAGE_ID:build-$BUILD_NUMBER
           docker push $IMAGE_ID:latest
           docker push $IMAGE_ID:build-$BUILD_NUMBER
+      - name: Update service
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}

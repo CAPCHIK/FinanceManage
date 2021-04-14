@@ -17,11 +17,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: try invoke ssh
         uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          script: whoami
       - name: Generate build number
         uses: einaregilsson/build-number@v3
         with:
@@ -50,3 +45,8 @@ jobs:
           docker tag $IMAGE_ID $IMAGE_ID:build-$BUILD_NUMBER
           docker push $IMAGE_ID:latest
           docker push $IMAGE_ID:build-$BUILD_NUMBER
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER fin-manage_server

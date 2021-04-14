@@ -56,6 +56,7 @@ namespace FinanceManage.Server
             }
             else
             {
+                app.UseForwardedHeaders();
                 app.UseExceptionHandler("/Error");
             }
 

@@ -1,7 +1,11 @@
-version: '3.9'
+version: '3.8'
 
 services: 
     server:
-        build: deploy
         environment:
             - ConnectionStrings__PostgresDb=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.10'
+                    memory: 150M

@@ -26,9 +26,10 @@ jobs:
       - name: Build docker image
         run: docker build -t $IMAGE_NAME ./deploy
       - name: Log into registry
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
       - name: Push image
+        if: ${{ github.ref == 'refs/heads/main' }}
         run: |
           IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
 

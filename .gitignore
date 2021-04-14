@@ -365,3 +365,4 @@ FodyWeavers.xsd
 
 deploy/build
 postgres-data
+environment.ps1

@@ -1,0 +1,24 @@
+version: '3.9'
+
+services: 
+    server:
+        build: deploy
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__PostgresDb=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=finance-manage-dev-db;
+        ports:
+            - 5000:5000
+    postgres:
+        image: postgres:13-alpine
+        environment:
+            - POSTGRES_PASSWORD=password
+        ports:
+            - 5432:5432
+        volumes:
+            - ./postgres-data/:/var/lib/postgresql/data
+        restart: on-failure
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "200k"
+                max-file: "10"

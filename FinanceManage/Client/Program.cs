@@ -17,7 +17,7 @@ namespace FinanceManage.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
-
+            Console.WriteLine(new Uri(builder.HostEnvironment.BaseAddress));
             builder.Services.AddHttpClient("FinanceManage.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 

@@ -4,8 +4,11 @@ services:
     server:
         environment:
             - ConnectionStrings__PostgresDb=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+            - IdentityServer__Key__Type=File
+            - IdentityServer__Key__FilePath=${IDENTITY_CERT_FILE_PATH?pass identity certificate path IDENTITY_CERT_FILE_PATH}
+            - IdentityServer__Key__Password=${IDENTITY_CERT_FILE_PASSWORD?pass identity certificate password IDENTITY_CERT_FILE_PASSWORD}
         deploy:
             resources:
                 limits:
-                    cpus: '0.10'
+                    cpus: '0.80'
                     memory: 150M

@@ -17,14 +17,14 @@ namespace FinanceManage.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
-            Console.WriteLine(new Uri(builder.HostEnvironment.BaseAddress));
+            Console.WriteLine();
             builder.Services.AddHttpClient("FinanceManage.ServerAPI", client => client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
                 .AddHttpMessageHandler<BaseAddressAuthorizationMessageHandler>();
 
             // Supply HttpClient instances that include access tokens when making requests to the server project
             builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("FinanceManage.ServerAPI"));
 
-            builder.Services.AddApiAuthorization();
+            builder.Services.AddApiAuthorization(config => config.ProviderOptions.ConfigurationEndpoint = $"{new Uri(builder.HostEnvironment.BaseAddress)}.well-known/openid-configuration");
 
             await builder.Build().RunAsync();
         }

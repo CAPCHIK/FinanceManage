@@ -24,12 +24,20 @@ namespace FinanceManage.TelegramBot
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            telegramClient.OnMessage += TelegramClient_OnMessage;
+            telegramClient.StartReceiving(cancellationToken: stoppingToken);
             while (!stoppingToken.IsCancellationRequested)
             {
                 var me = await telegramClient.GetMeAsync(stoppingToken);
                 logger.LogInformation(me.FirstName);
                 await Task.Delay(1000, stoppingToken);
             }
+            telegramClient.StopReceiving();
+        }
+
+        private void TelegramClient_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs args)
+        {
+            logger.LogInformation($"message: {args.Message.Text}");
         }
     }
 }

@@ -112,7 +112,7 @@ namespace FinanceManage.TelegramBot
             switch (message.Text)
             {
                 case WeekSpending:
-                    var result = await mediator.Send(new WeekSpending.Command(new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero), message.Chat.Id));
+                    var result = await mediator.Send(new WeekSpending.Command(new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero).AddDays(-7), message.Chat.Id));
                     if (result.Sum == 0)
                     {
                         await SendMainPanelMessage(message.Chat.Id, $"Нет трат за последнюю неделю", message.MessageId);

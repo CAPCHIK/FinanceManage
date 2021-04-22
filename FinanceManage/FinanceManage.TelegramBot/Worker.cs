@@ -9,7 +9,7 @@ using Telegram.Bot;
 
 namespace FinanceManage.TelegramBot
 {
-    public class Worker : BackgroundService
+    public class Worker : IHostedService
     {
         private readonly ITelegramBotClient telegramClient;
         private readonly ILogger<Worker> logger;
@@ -22,22 +22,26 @@ namespace FinanceManage.TelegramBot
             this.logger = logger;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
+            var me = await telegramClient.GetMeAsync(cancellationToken);
+            logger.LogInformation($"Using Telegram bot {me.FirstName} id: {me.Id}");
+
             telegramClient.OnMessage += TelegramClient_OnMessage;
-            telegramClient.StartReceiving(cancellationToken: stoppingToken);
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                var me = await telegramClient.GetMeAsync(stoppingToken);
-                logger.LogInformation(me.FirstName);
-                await Task.Delay(1000, stoppingToken);
-            }
+            telegramClient.StartReceiving(cancellationToken: cancellationToken);
+
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
             telegramClient.StopReceiving();
+            return Task.CompletedTask; // TODO save tasks and waiting
         }
 
         private void TelegramClient_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs args)
         {
-            logger.LogInformation($"message: {args.Message.Text}");
+            logger.LogInformation($"message id: {args.Message.MessageId}");
+            logger.LogInformation($"message text: {args.Message?.Text}");
         }
     }
 }

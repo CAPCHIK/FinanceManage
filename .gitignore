@@ -366,5 +366,6 @@ FodyWeavers.xsd
 deploy/build
 postgres-data
 environment.ps1
+.env
 stack.yml
 /FinanceManage/FinanceManage.TelegramBot/appsettings.Local.json

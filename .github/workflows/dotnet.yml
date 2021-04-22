@@ -1,13 +1,9 @@
 name: .NET
 
-on:
-  push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+on: push
 
 env:
-  IMAGE_ID: docker.pkg.github.com/capchik/financemanage/server
+  IMAGE_ID: docker.pkg.github.com/capchik/financemanage/tg-bot
 
 jobs:
   build:
@@ -43,12 +39,12 @@ jobs:
           docker tag $IMAGE_ID $IMAGE_ID:build-$BUILD_NUMBER
           docker push $IMAGE_ID:latest
           docker push $IMAGE_ID:build-$BUILD_NUMBER
-      - name: Update service
-        if: ${{ github.ref == 'refs/heads/master' }}
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          envs: IMAGE_ID,BUILD_NUMBER
-          script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER fin-manage_server
+      # - name: Update service
+      #   if: ${{ github.ref == 'refs/heads/master' }}
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.HOST }}
+      #     username: ${{ secrets.USERNAME }}
+      #     password: ${{ secrets.PASSWORD }}
+      #     envs: IMAGE_ID,BUILD_NUMBER
+      #     script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER fin-manage_tg-bot

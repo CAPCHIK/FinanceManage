@@ -1,13 +1,12 @@
 version: '3.8'
 
 services: 
-    server:
+    tg_bot:
         build: deploy
+        restart: on-failure
         environment:
             - ASPNETCORE_ENVIRONMENT=Development
-            - ConnectionStrings__PostgresDb=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=finance-manage-dev-db;
-        ports:
-            - 5000:5000
+            - ConnectionStrings__Database=User ID=postgres;Password=password;Server=postgres;Port=5432;Database=finance-manage-dev-db;
     postgres:
         image: postgres:13-alpine
         environment:

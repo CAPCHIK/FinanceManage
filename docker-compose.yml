@@ -1,5 +1,7 @@
 version: '3.8'
 
 services: 
-    server:
-        image: docker.pkg.github.com/capchik/financemanage/server:latest
+    tg_bot:
+        image: docker.pkg.github.com/capchik/financemanage/tg-bot:latest
+        environment:
+            - TelegramBotOptions__AccessToken=${TELEGRAM_BOT_ACCESS_TOKEN?pass tg bot access token TELEGRAM_BOT_ACCESS_TOKEN}

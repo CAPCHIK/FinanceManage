@@ -1,0 +1,1 @@
+﻿dotnet ef migrations add --startup-project ../FinanceManage.TelegramBot/ $args[0]

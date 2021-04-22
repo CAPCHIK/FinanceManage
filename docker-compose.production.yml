@@ -1,12 +1,9 @@
 version: '3.8'
 
 services: 
-    server:
+    tg_bot:
         environment:
-            - ConnectionStrings__PostgresDb=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
-            - IdentityServer__Key__Type=File
-            - IdentityServer__Key__FilePath=${IDENTITY_CERT_FILE_PATH?pass identity certificate path IDENTITY_CERT_FILE_PATH}
-            - IdentityServer__Key__Password=${IDENTITY_CERT_FILE_PASSWORD?pass identity certificate password IDENTITY_CERT_FILE_PASSWORD}
+            - ConnectionStrings__Database=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
         deploy:
             resources:
                 limits:

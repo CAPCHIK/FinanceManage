@@ -64,7 +64,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             DotNetPublish(s => s
-                .SetProject(Solution.GetProject("FinanceManage.Server"))
+                .SetProject(Solution.GetProject("FinanceManage.TelegramBot"))
                 .SetConfiguration(Configuration)
                 .SetOutput(OutputDirectory)
                 .EnableNoRestore());

@@ -13,6 +13,6 @@ namespace FinanceManage.Models
         public string Category { get; set; }
         public float Price { get; set; }
         public DateTimeOffset Date { get; set; }
-        public int TelegramChannelId { get; set; }
+        public long TelegramChannelId { get; set; }
     }
 }

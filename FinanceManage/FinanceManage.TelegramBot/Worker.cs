@@ -6,10 +6,13 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FinanceManage.TelegramBot
 {
@@ -18,6 +21,12 @@ namespace FinanceManage.TelegramBot
         private readonly ITelegramBotClient telegramClient;
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<Worker> logger;
+
+        private const string WeekSpending = "Траты за неделю";
+        private readonly IReadOnlyCollection<string> topLevelCommands = new List<string>
+        {
+            WeekSpending
+        };
 
         public Worker(
             ITelegramBotClient telegramClient,
@@ -57,47 +66,169 @@ namespace FinanceManage.TelegramBot
         {
             if (string.IsNullOrEmpty(message.Text))
             {
-                await telegramClient.SendTextMessageAsync(message.Chat, $"Некорректное сообщение", replyToMessageId: message.MessageId);
+                await SendMainPanelMessage(message.Chat, $"Некорректное сообщение", replyToMessageId: message.MessageId);
                 return;
             }
+            if (topLevelCommands.Contains(message.Text))
+            {
+                await HandleTopLevelCommand(message, mediator);
+                return;
+            }
+
             var lines = message.Text.Split('\n');
-            if (lines.Length != 3)
+            SavePurchase.Command command = null;
+            if (lines.Length == 2)
             {
-                await telegramClient.SendTextMessageAsync(message.Chat, $"Некорректный формат сообщения", replyToMessageId: message.MessageId);
-                return;
+                command = await HandleCategoryAndPrice(lines, message);
             }
-            var category = lines[0];
-            if (!ParseDateFromLine(lines[1], out var date))
+            else if (lines.Length == 3)
             {
-                await telegramClient.SendTextMessageAsync(message.Chat, $"Некорректный формат даты. Необходимо указать день.месяц", replyToMessageId: message.MessageId);
-                return;
-            }
-            if (!float.TryParse(lines[2], out var price))
-            {
-                await telegramClient.SendTextMessageAsync(message.Chat, $"Некорректный формат количества денег. Необходимо число", replyToMessageId: message.MessageId);
-                return;
-            }
-            var saveResult = await mediator.Send(new SavePurchase.Command(
-                message.From.Id,
-                category,
-                price,
-                date,
-                message.Chat.Id));
-            if (saveResult)
-            {
-                await telegramClient.SendTextMessageAsync(message.Chat, $"Записано", replyToMessageId: message.MessageId);
+                command = await HandleFullInfo(lines, message);
             }
             else
             {
-                await telegramClient.SendTextMessageAsync(message.Chat, $"Ошибка при сохранении", replyToMessageId: message.MessageId);
+                await SendMainPanelMessage(message.Chat, $"Некорректный формат сообщения. Необходимо вписать или три (категория, дата, сумма), или две (категория, сумма) строки.", replyToMessageId: message.MessageId);
+            }
+
+            if (command == null)
+            {
+                logger.LogInformation($"Incorrect input message");
+                return;
+            }
+            var saveResult = await mediator.Send(command);
+            if (saveResult)
+            {
+                await SendMainPanelMessage(message.Chat, BuildSavedPurchaseMessage(command), parseMode: ParseMode.MarkdownV2, replyToMessageId: message.MessageId);
+            }
+            else
+            {
+                await SendMainPanelMessage(message.Chat, $"Ошибка при сохранении", replyToMessageId: message.MessageId);
+            }
+
+        }
+
+        private async Task HandleTopLevelCommand(Message message, IMediator mediator)
+        {
+            switch (message.Text)
+            {
+                case WeekSpending:
+                    var result = await mediator.Send(new WeekSpending.Command(new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero), message.Chat.Id));
+                    if (result.Sum == 0)
+                    {
+                        await SendMainPanelMessage(message.Chat.Id, $"Нет трат за последнюю неделю", message.MessageId);
+                    }
+                    else
+                    {
+                        await SendMainPanelMessage(message.Chat.Id, BuildWeekSpendingMessage(result), message.MessageId, ParseMode.MarkdownV2);
+                    }
+                    break;
+                default:
+                    await SendMainPanelMessage(message.Chat.Id, $"Некорректная команда", message.MessageId);
+                    break;
             }
         }
 
-        private bool ParseDateFromLine(string line, out DateTimeOffset date)
+        private static string BuildWeekSpendingMessage(WeekSpending.Result result)
+        {
+            var builder = new StringBuilder();
+            builder.Append("За последнюю неделю потрачено: `");
+            builder.Append(result.Sum.ToMoneyString());
+            builder.AppendLine("₽`");
+            foreach (var categoryRecord in result.ByCategory.OrderByDescending(cr => cr.Value))
+            {
+                builder.Append(categoryRecord.Key);
+                builder.Append(": `");
+                builder.Append(categoryRecord.Value.ToMoneyString());
+                builder.AppendLine("₽`");
+            }
+
+
+            return builder.ToString();
+        }
+
+
+        private static string BuildSavedPurchaseMessage(SavePurchase.Command command)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"Сохранено");
+
+            builder.Append(@"Категория: `");
+            builder.Append(command.Category);
+            builder.AppendLine("`");
+
+            builder.Append(@"Сумма: `");
+            builder.Append(command.Price.ToMoneyString());
+            builder.AppendLine("₽`");
+
+            builder.Append(@"Дата: `");
+            builder.Append(command.Date.ToString("yyyy.MM.dd"));
+            builder.AppendLine("`");
+
+            return builder.ToString();
+        }
+
+        private async Task<SavePurchase.Command> HandleFullInfo(string[] lines, Message message)
+        {
+            var category = lines[0];
+            if (!ParseDateFromLine(lines[1], out var date))
+            {
+                await SendMainPanelMessage(message.Chat, $"Некорректный формат даты. Необходимо указать день.месяц", replyToMessageId: message.MessageId);
+                return null;
+            }
+            var price = await GetProceFromLine(lines[1], message);
+            if (price == null)
+            {
+                return null;
+            }
+            return new SavePurchase.Command(
+                message.From.Id,
+                category,
+                price.Value,
+                date,
+                message.Chat.Id);
+        }
+
+        private async Task<SavePurchase.Command> HandleCategoryAndPrice(string[] lines, Message message)
+        {
+            var category = lines[0];
+            var price = await GetProceFromLine(lines[1], message);
+            if (price == null)
+            {
+                return null;
+            }
+            return new SavePurchase.Command(
+                message.From.Id,
+                category,
+                price.Value,
+                DateTimeOffset.UtcNow,
+                message.Chat.Id);
+        }
+
+        private async Task<float?> GetProceFromLine(string line, Message message)
+        {
+            if (!float.TryParse(line, out var price))
+            {
+                await SendMainPanelMessage(message.Chat, $"Некорректный формат суммы на второй строке. Необходимо число.", replyToMessageId: message.MessageId);
+                return null;
+            }
+            if (price <= 0)
+            {
+                await SendMainPanelMessage(message.Chat, $"Сумма может быть только положительной", replyToMessageId: message.MessageId);
+                return null;
+            }
+            return price;
+        }
+
+        private async Task SendMainPanelMessage(ChatId chatId, string text, int replyToMessageId, ParseMode parseMode = ParseMode.Default)
+        {
+            await telegramClient.SendTextMessageAsync(chatId, text, parseMode: parseMode, replyToMessageId: replyToMessageId,
+                replyMarkup: new ReplyKeyboardMarkup(topLevelCommands.Select(c => new KeyboardButton[] { new KeyboardButton(c) }), resizeKeyboard: true));
+        }
+
+        private static bool ParseDateFromLine(string line, out DateTimeOffset date)
         {
             try
             {
-
                 var tokens = line.Split('.').Select(int.Parse).ToArray();
                 date = new DateTimeOffset(DateTimeOffset.UtcNow.Year, tokens[1], tokens[0], 0, 0, 0, TimeSpan.Zero);
                 return true;

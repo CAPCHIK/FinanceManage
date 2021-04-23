@@ -33,6 +33,8 @@ namespace FinanceManage.TelegramBot
             SpendingStatistic
         };
 
+        private JsonSerializerOptions jsonInlineButtonOptions;
+
         public Worker(
             ITelegramBotClient telegramClient,
             IServiceScopeFactory serviceScopeFactory,
@@ -41,6 +43,9 @@ namespace FinanceManage.TelegramBot
             this.telegramClient = telegramClient;
             this.serviceScopeFactory = serviceScopeFactory;
             this.logger = logger;
+            var options = new JsonSerializerOptions();
+            options.Converters.Add(new DateTimeOffsetConverter());
+            jsonInlineButtonOptions = options;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -84,20 +89,22 @@ namespace FinanceManage.TelegramBot
 
         private async Task HandleCallbackQuery(IMediator mediator, CallbackQuery query)
         {
-            InlineQueryBase data = null;
+            InlineQueryBase data;
             try
             {
-                data = JsonSerializer.Deserialize<InlineQueryBase>(query.Data);
+                data = JsonSerializer.Deserialize<InlineQueryBase>(query.Data, jsonInlineButtonOptions);
             }
             catch
             {
                 await SendMainPanelMessage(query.Message.Chat.Id, "Данная кнопка не поддерживается", query.Message.MessageId);
+                return;
             }
             switch (data.Command)
             {
                 case CallbackQueryCommand.WeekSpendingStatistic:
-                    var weekSpendingStatisticData = JsonSerializer.Deserialize<WeekSpendingStatisticData>(query.Data);
-                    var (text, markup) = await PrepareWeekSpendingMessage(weekSpendingStatisticData.Data, query.Message.Chat.Id, mediator);
+                    logger.LogInformation(query.Data);
+                    var weekSpendingStatisticData = JsonSerializer.Deserialize<WeekSpendingStatisticData>(query.Data, jsonInlineButtonOptions);
+                    var (text, markup) = await PrepareWeekSpendingMessage(weekSpendingStatisticData.WeekStart, query.Message.Chat.Id, weekSpendingStatisticData.Category, mediator);
                     await telegramClient.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, text, ParseMode.MarkdownV2, replyMarkup: markup);
                     break;
                 default:
@@ -166,24 +173,52 @@ namespace FinanceManage.TelegramBot
 
         private async Task HandleSpendingStatistic(Message message, IMediator mediator)
         {
-            var (text, markup) = await PrepareWeekSpendingMessage(message.Date.Date.AddDays(-6), message.Chat.Id, mediator);
+            var (text, markup) = await PrepareWeekSpendingMessage(message.Date.Date.AddDays(-6), message.Chat.Id, WeekSpending.CategoryMode.Compact, mediator);
             await SendMainPanelMessage(message.Chat.Id, text, message.MessageId, ParseMode.MarkdownV2, markup);
         }
 
-        private async Task<(string text, InlineKeyboardMarkup markup)> PrepareWeekSpendingMessage(DateTimeOffset start, long chatId, IMediator mediator)
+        private async Task<(string text, InlineKeyboardMarkup markup)> PrepareWeekSpendingMessage(DateTimeOffset start, long chatId, WeekSpending.CategoryMode categoryMode, IMediator mediator)
         {
-            var result = await mediator.Send(new WeekSpending.Command(start, chatId));
+            var result = await mediator.Send(new WeekSpending.Command(start, chatId, categoryMode));
             string resultText = BuildWeekSpendingMessage(result);
 
-            var callbackDataPreviousWeek = new WeekSpendingStatisticData(result.From.AddDays(-7));
-            var callbackDataNextWeek = new WeekSpendingStatisticData(result.To);
+            var callbackDataPreviousWeek = new WeekSpendingStatisticData(result.From.AddDays(-7), categoryMode);
+            var callbackDataPreviousWeekJson = JsonSerializer.Serialize(callbackDataPreviousWeek, jsonInlineButtonOptions);
 
-            var buttons = new InlineKeyboardButton[]
+            var callbackDataNextWeek = new WeekSpendingStatisticData(result.To, categoryMode);
+            var callbackDataNextWeekJson = JsonSerializer.Serialize(callbackDataNextWeek, jsonInlineButtonOptions);
+
+            InlineKeyboardButton categoryModeButton;
+            switch (categoryMode)
             {
-                InlineKeyboardButton.WithCallbackData(
-                    $"{result.From.AddDays(-7):dd.MM}-{result.From.AddMinutes(-1):dd.MM}", JsonSerializer.Serialize(callbackDataPreviousWeek)),
-                InlineKeyboardButton.WithCallbackData(
-                    $"{result.To:dd.MM}-{result.To.AddDays(7).AddMinutes(-1):dd.MM}", JsonSerializer.Serialize(callbackDataNextWeek))
+                case WeekSpending.CategoryMode.Compact:
+                    var toComplete = new WeekSpendingStatisticData(start, WeekSpending.CategoryMode.Complete);
+                    var toCompleteJson = JsonSerializer.Serialize(toComplete, jsonInlineButtonOptions);
+                    categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.HearNoEvilMonkey, toCompleteJson);
+                    break;
+                case WeekSpending.CategoryMode.Complete:
+                    var toCompact = new WeekSpendingStatisticData(start, WeekSpending.CategoryMode.Compact);
+                    var toCompactJson = JsonSerializer.Serialize(toCompact, jsonInlineButtonOptions);
+                    categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.SeeNoEvilMonkey, toCompactJson);
+                    break;
+                default:
+                    throw new ArgumentException("incorrect category", nameof(categoryMode));
+            }
+
+            var buttons = new InlineKeyboardButton[][] {
+
+                new InlineKeyboardButton[]
+                {
+                    InlineKeyboardButton.WithCallbackData(
+                        $"{result.From.AddDays(-7):dd.MM}-{result.From.AddMinutes(-1):dd.MM}", callbackDataPreviousWeekJson),
+
+                    InlineKeyboardButton.WithCallbackData(
+                        $"{result.To:dd.MM}-{result.To.AddDays(7).AddMinutes(-1):dd.MM}",callbackDataNextWeekJson )
+                },
+                new InlineKeyboardButton[]
+                {
+                       categoryModeButton
+                },
             };
             var inlineMarkup = new InlineKeyboardMarkup(buttons);
 

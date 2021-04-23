@@ -9,14 +9,9 @@ namespace FinanceManage.TelegramBot.InlineQueryModels
     public class InlineQueryBase
     {
         public CallbackQueryCommand Command { get; set; }
-    }
-    public class InlineQueryData<T> : InlineQueryBase
-    {
-        public InlineQueryData(CallbackQueryCommand command, T data)
+        public InlineQueryBase(CallbackQueryCommand command)
         {
             Command = command;
-            Data = data;
         }
-        public T Data { get; set; }
     }
 }

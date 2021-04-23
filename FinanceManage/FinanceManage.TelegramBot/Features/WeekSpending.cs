@@ -14,7 +14,7 @@ namespace FinanceManage.TelegramBot.Features
     public class WeekSpending
     {
         public record Command(DateTimeOffset WeekStart, long channelId) : IRequest<Result>;
-        public record Result(float Sum, Dictionary<string, float> ByCategory);
+        public record Result(float Sum, DateTimeOffset From, DateTimeOffset To, Dictionary<string, float> ByCategory);
 
         public class WeekSpendingHandler : IRequestHandler<Command, Result>
         {
@@ -39,13 +39,12 @@ namespace FinanceManage.TelegramBot.Features
                              && p.Date <= dateEnd)
                     .GroupBy(p => p.Category)
                     .Select(g => new { Caterory = g.Key, Sum = g.Sum(p => p.Price) })
-                    .ToListAsync();
-                if (response.Count == 0)
-                {
-                    return new Result(0, null);
-
-                }
-                return new Result(response.Sum(r => r.Sum), response.ToDictionary(r => r.Caterory, r => r.Sum));
+                    .ToListAsync(cancellationToken: cancellationToken);
+                return new Result(
+                    response.Select(r => r.Sum).DefaultIfEmpty(0).Sum(),
+                    dateStart,
+                    dateEnd,
+                    response.ToDictionary(r => r.Caterory, r => r.Sum));
             }
         }
     }

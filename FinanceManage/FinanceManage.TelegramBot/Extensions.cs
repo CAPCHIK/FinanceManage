@@ -20,5 +20,9 @@ namespace FinanceManage.TelegramBot
         {
             return value.ToString("#,0.00", nfi);
         }
+        public static string CompactMarkdownV2Date(this DateTimeOffset dateTime)
+        {
+            return dateTime.ToString("dd.MM").Replace(".", "\\.");
+        }
     }
 }

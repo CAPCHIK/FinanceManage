@@ -1,15 +1,20 @@
 using FinanceManage.TelegramBot.Features;
+using FinanceManage.TelegramBot.InlineQueryModels;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -22,10 +27,10 @@ namespace FinanceManage.TelegramBot
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<Worker> logger;
 
-        private const string WeekSpending = "Траты за неделю";
+        private const string SpendingStatistic = "Статистика трат";
         private readonly IReadOnlyCollection<string> topLevelCommands = new List<string>
         {
-            WeekSpending
+            SpendingStatistic
         };
 
         public Worker(
@@ -44,8 +49,11 @@ namespace FinanceManage.TelegramBot
             logger.LogInformation($"Using Telegram bot {me.FirstName} id: {me.Id}");
 
             telegramClient.OnMessage += TelegramClient_OnMessage;
+            telegramClient.OnCallbackQuery += TelegramClient_OnCallbackQuery; ;
             telegramClient.StartReceiving(cancellationToken: cancellationToken);
         }
+
+
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
@@ -60,7 +68,43 @@ namespace FinanceManage.TelegramBot
             await HandleMessage(mediator, args.Message);
         }
 
+        private async void TelegramClient_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        {
+            using var scope = serviceScopeFactory.CreateScope();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            try
+            {
+                await HandleCallbackQuery(mediator, e.CallbackQuery);
+            }
+            catch (MessageIsNotModifiedException ex)
+            {
+                logger.LogWarning(ex, "try to set same text for message");
+            }
+        }
 
+        private async Task HandleCallbackQuery(IMediator mediator, CallbackQuery query)
+        {
+            InlineQueryBase data = null;
+            try
+            {
+                data = JsonSerializer.Deserialize<InlineQueryBase>(query.Data);
+            }
+            catch
+            {
+                await SendMainPanelMessage(query.Message.Chat.Id, "Данная кнопка не поддерживается", query.Message.MessageId);
+            }
+            switch (data.Command)
+            {
+                case CallbackQueryCommand.WeekSpendingStatistic:
+                    var weekSpendingStatisticData = JsonSerializer.Deserialize<WeekSpendingStatisticData>(query.Data);
+                    var (text, markup) = await PrepareWeekSpendingMessage(weekSpendingStatisticData.Data, query.Message.Chat.Id, mediator);
+                    await telegramClient.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, text, ParseMode.MarkdownV2, replyMarkup: markup);
+                    break;
+                default:
+                    await SendMainPanelMessage(query.Message.Chat.Id, "Данная кнопка не поддерживается", query.Message.MessageId);
+                    break;
+            }
+        }
 
         private async Task HandleMessage(IMediator mediator, Message message)
         {
@@ -111,16 +155,8 @@ namespace FinanceManage.TelegramBot
         {
             switch (message.Text)
             {
-                case WeekSpending:
-                    var result = await mediator.Send(new WeekSpending.Command(new DateTimeOffset(DateTimeOffset.UtcNow.Date, TimeSpan.Zero).AddDays(-6), message.Chat.Id));
-                    if (result.Sum == 0)
-                    {
-                        await SendMainPanelMessage(message.Chat.Id, $"Нет трат за последнюю неделю", message.MessageId);
-                    }
-                    else
-                    {
-                        await SendMainPanelMessage(message.Chat.Id, BuildWeekSpendingMessage(result), message.MessageId, ParseMode.MarkdownV2);
-                    }
+                case SpendingStatistic:
+                    await HandleSpendingStatistic(message, mediator);
                     break;
                 default:
                     await SendMainPanelMessage(message.Chat.Id, $"Некорректная команда", message.MessageId);
@@ -128,15 +164,44 @@ namespace FinanceManage.TelegramBot
             }
         }
 
+        private async Task HandleSpendingStatistic(Message message, IMediator mediator)
+        {
+            var (text, markup) = await PrepareWeekSpendingMessage(message.Date.Date.AddDays(-6), message.Chat.Id, mediator);
+            await SendMainPanelMessage(message.Chat.Id, text, message.MessageId, ParseMode.MarkdownV2, markup);
+        }
+
+        private async Task<(string text, InlineKeyboardMarkup markup)> PrepareWeekSpendingMessage(DateTimeOffset start, long chatId, IMediator mediator)
+        {
+            var result = await mediator.Send(new WeekSpending.Command(start, chatId));
+            string resultText = BuildWeekSpendingMessage(result);
+
+            var callbackDataPreviousWeek = new WeekSpendingStatisticData(result.From.AddDays(-7));
+            var callbackDataNextWeek = new WeekSpendingStatisticData(result.To);
+
+            var buttons = new InlineKeyboardButton[]
+            {
+                InlineKeyboardButton.WithCallbackData(
+                    $"{result.From.AddDays(-7):dd.MM}-{result.From.AddMinutes(-1):dd.MM}", JsonSerializer.Serialize(callbackDataPreviousWeek)),
+                InlineKeyboardButton.WithCallbackData(
+                    $"{result.To:dd.MM}-{result.To.AddDays(7).AddMinutes(-1):dd.MM}", JsonSerializer.Serialize(callbackDataNextWeek))
+            };
+            var inlineMarkup = new InlineKeyboardMarkup(buttons);
+
+            return (resultText, inlineMarkup);
+        }
+
         private static string BuildWeekSpendingMessage(WeekSpending.Result result)
         {
             var builder = new StringBuilder();
-            builder.Append("За последнюю неделю потрачено: `");
+            builder.Append(result.From.CompactMarkdownV2Date());
+            builder.Append(" \\- ");
+            builder.Append(result.To.AddMinutes(-1).CompactMarkdownV2Date());
+            builder.Append(": `");
             builder.Append(result.Sum.ToMoneyString());
             builder.AppendLine("₽`");
             foreach (var categoryRecord in result.ByCategory.OrderByDescending(cr => cr.Value))
             {
-                builder.Append(categoryRecord.Key);
+                builder.Append(Escape(categoryRecord.Key));
                 builder.Append(": `");
                 builder.Append(categoryRecord.Value.ToMoneyString());
                 builder.AppendLine("₽`");
@@ -153,7 +218,7 @@ namespace FinanceManage.TelegramBot
             builder.AppendLine($"Сохранено");
 
             builder.Append(@"Категория: `");
-            builder.Append(command.Category);
+            builder.Append(Escape(command.Category));
             builder.AppendLine("`");
 
             builder.Append(@"Сумма: `");
@@ -169,13 +234,17 @@ namespace FinanceManage.TelegramBot
 
         private async Task<SavePurchase.Command> HandleFullInfo(string[] lines, Message message)
         {
-            var category = lines[0];
-            if (!ParseDateFromLine(lines[1], out var date))
+            var (categorySuccess, category) = await ParseCategoryFromLine(lines[0], message);
+            if (!categorySuccess)
+            {
+                return null;
+            }
+            if (!ParseDateFromLine(lines[1], message.Date.Year, out var date))
             {
                 await SendMainPanelMessage(message.Chat, $"Некорректный формат даты. Необходимо указать день.месяц", replyToMessageId: message.MessageId);
                 return null;
             }
-            var price = await GetProceFromLine(lines[1], message);
+            var price = await GetPriceFromLine(lines[2], message);
             if (price == null)
             {
                 return null;
@@ -190,8 +259,12 @@ namespace FinanceManage.TelegramBot
 
         private async Task<SavePurchase.Command> HandleCategoryAndPrice(string[] lines, Message message)
         {
-            var category = lines[0];
-            var price = await GetProceFromLine(lines[1], message);
+            var (categorySuccess, category) = await ParseCategoryFromLine(lines[0], message);
+            if (!categorySuccess)
+            {
+                return null;
+            }
+            var price = await GetPriceFromLine(lines[1], message);
             if (price == null)
             {
                 return null;
@@ -200,15 +273,15 @@ namespace FinanceManage.TelegramBot
                 message.From.Id,
                 category,
                 price.Value,
-                DateTimeOffset.UtcNow,
+                message.Date,
                 message.Chat.Id);
         }
 
-        private async Task<float?> GetProceFromLine(string line, Message message)
+        private async Task<float?> GetPriceFromLine(string line, Message message)
         {
-            if (!float.TryParse(line, out var price))
+            if (!float.TryParse(line, NumberStyles.Float, CultureInfo.InvariantCulture, out var price) || float.IsNaN(price))
             {
-                await SendMainPanelMessage(message.Chat, $"Некорректный формат суммы на второй строке. Необходимо число.", replyToMessageId: message.MessageId);
+                await SendMainPanelMessage(message.Chat, $"Некорректный формат суммы. Необходимо использовать число.", replyToMessageId: message.MessageId);
                 return null;
             }
             if (price <= 0)
@@ -216,28 +289,56 @@ namespace FinanceManage.TelegramBot
                 await SendMainPanelMessage(message.Chat, $"Сумма может быть только положительной", replyToMessageId: message.MessageId);
                 return null;
             }
+            if (float.IsInfinity(price))
+            {
+                await SendMainPanelMessage(message.Chat, $"К сожалению, ваше число не входит в рамки доступных для сохранения", replyToMessageId: message.MessageId);
+                return null;
+            }
+            price = (float)Math.Round(price, 2); // TODO use decimal #1
             return price;
         }
 
-        private async Task SendMainPanelMessage(ChatId chatId, string text, int replyToMessageId, ParseMode parseMode = ParseMode.Default)
+        private async Task SendMainPanelMessage(ChatId chatId, string text, int replyToMessageId, ParseMode parseMode = ParseMode.Default, IReplyMarkup replyMarkup = default)
         {
+            replyMarkup ??= new ReplyKeyboardMarkup(topLevelCommands.Select(c => new KeyboardButton[] { new KeyboardButton(c) }), resizeKeyboard: true);
             await telegramClient.SendTextMessageAsync(chatId, text, parseMode: parseMode, replyToMessageId: replyToMessageId,
-                replyMarkup: new ReplyKeyboardMarkup(topLevelCommands.Select(c => new KeyboardButton[] { new KeyboardButton(c) }), resizeKeyboard: true));
+                replyMarkup: replyMarkup);
         }
 
-        private static bool ParseDateFromLine(string line, out DateTimeOffset date)
+        private async Task<(bool success, string category)> ParseCategoryFromLine(string line, Message message)
+        {
+            if (string.IsNullOrEmpty(line))
+            {
+                await SendMainPanelMessage(message.Chat, "Необходимо ввести категорию", replyToMessageId: message.MessageId);
+                return (false, default);
+            }
+            if (line.Length > 100)
+            {
+                await SendMainPanelMessage(message.Chat, "Максимальная длина категории - 100 символов", replyToMessageId: message.MessageId);
+                return (false, default);
+            }
+            return (true, line);
+        }
+
+        private bool ParseDateFromLine(string line, int year, out DateTimeOffset date)
         {
             try
             {
                 var tokens = line.Split('.').Select(int.Parse).ToArray();
-                date = new DateTimeOffset(DateTimeOffset.UtcNow.Year, tokens[1], tokens[0], 0, 0, 0, TimeSpan.Zero);
+                date = new DateTimeOffset(year, tokens[1], tokens[0], 0, 0, 0, TimeSpan.Zero);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                logger.LogWarning(ex, "can't parse date");
                 date = default;
                 return false;
             }
+        }
+
+        private static string Escape(string text)
+        {
+            return Regex.Replace(text, @"_|\*|\[|\]|\(|\)|~|`|>|#|\+|-|=|\\|{|}|\.|!", m => $"\\{m.Value}");
         }
     }
 }

@@ -1,4 +1,5 @@
 using FinanceManage.TelegramBot.Features;
+using FinanceManage.TelegramBot.Features.Telegram;
 using FinanceManage.TelegramBot.InlineQueryModels;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,11 +28,6 @@ namespace FinanceManage.TelegramBot
         private readonly IServiceScopeFactory serviceScopeFactory;
         private readonly ILogger<Worker> logger;
 
-        private const string SpendingStatistic = "Статистика трат";
-        private readonly IReadOnlyCollection<string> topLevelCommands = new List<string>
-        {
-            SpendingStatistic
-        };
 
         private JsonSerializerOptions jsonInlineButtonOptions;
 
@@ -104,7 +100,7 @@ namespace FinanceManage.TelegramBot
                 case CallbackQueryCommand.WeekSpendingStatistic:
                     logger.LogInformation(query.Data);
                     var weekSpendingStatisticData = JsonSerializer.Deserialize<WeekSpendingStatisticData>(query.Data, jsonInlineButtonOptions);
-                    var (text, markup) = await PrepareWeekSpendingMessage(weekSpendingStatisticData.WeekStart, query.Message.Chat.Id, weekSpendingStatisticData.Category, mediator);
+                    var (text, markup) = await mediator.Send(new PrepareWeekSpendingMessage.Command(weekSpendingStatisticData.WeekStart, query.Message.Chat.Id, weekSpendingStatisticData.Category));
                     await telegramClient.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, text, ParseMode.MarkdownV2, replyMarkup: markup);
                     break;
                 default:
@@ -120,12 +116,11 @@ namespace FinanceManage.TelegramBot
                 await SendMainPanelMessage(message.Chat, $"Некорректное сообщение", replyToMessageId: message.MessageId);
                 return;
             }
-            if (topLevelCommands.Contains(message.Text))
+            var isTopCommand = await mediator.Send(new HandleTopLevelCommandMessage.Command(message));
+            if (isTopCommand)
             {
-                await HandleTopLevelCommand(message, mediator);
                 return;
             }
-
             var lines = message.Text.Split('\n');
             SavePurchase.Command command = null;
             if (lines.Length == 2)
@@ -156,94 +151,6 @@ namespace FinanceManage.TelegramBot
                 await SendMainPanelMessage(message.Chat, $"Ошибка при сохранении", replyToMessageId: message.MessageId);
             }
 
-        }
-
-        private async Task HandleTopLevelCommand(Message message, IMediator mediator)
-        {
-            switch (message.Text)
-            {
-                case SpendingStatistic:
-                    await HandleSpendingStatistic(message, mediator);
-                    break;
-                default:
-                    await SendMainPanelMessage(message.Chat.Id, $"Некорректная команда", message.MessageId);
-                    break;
-            }
-        }
-
-        private async Task HandleSpendingStatistic(Message message, IMediator mediator)
-        {
-            var (text, markup) = await PrepareWeekSpendingMessage(message.Date.Date.AddDays(-6), message.Chat.Id, WeekSpending.CategoryMode.Compact, mediator);
-            await SendMainPanelMessage(message.Chat.Id, text, message.MessageId, ParseMode.MarkdownV2, markup);
-        }
-
-        private async Task<(string text, InlineKeyboardMarkup markup)> PrepareWeekSpendingMessage(DateTimeOffset start, long chatId, WeekSpending.CategoryMode categoryMode, IMediator mediator)
-        {
-            var result = await mediator.Send(new WeekSpending.Command(start, chatId, categoryMode));
-            string resultText = BuildWeekSpendingMessage(result);
-
-            var callbackDataPreviousWeek = new WeekSpendingStatisticData(result.From.AddDays(-7), categoryMode);
-            var callbackDataPreviousWeekJson = JsonSerializer.Serialize(callbackDataPreviousWeek, jsonInlineButtonOptions);
-
-            var callbackDataNextWeek = new WeekSpendingStatisticData(result.To, categoryMode);
-            var callbackDataNextWeekJson = JsonSerializer.Serialize(callbackDataNextWeek, jsonInlineButtonOptions);
-
-            InlineKeyboardButton categoryModeButton;
-            switch (categoryMode)
-            {
-                case WeekSpending.CategoryMode.Compact:
-                    var toComplete = new WeekSpendingStatisticData(start, WeekSpending.CategoryMode.Complete);
-                    var toCompleteJson = JsonSerializer.Serialize(toComplete, jsonInlineButtonOptions);
-                    categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.HearNoEvilMonkey, toCompleteJson);
-                    break;
-                case WeekSpending.CategoryMode.Complete:
-                    var toCompact = new WeekSpendingStatisticData(start, WeekSpending.CategoryMode.Compact);
-                    var toCompactJson = JsonSerializer.Serialize(toCompact, jsonInlineButtonOptions);
-                    categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.SeeNoEvilMonkey, toCompactJson);
-                    break;
-                default:
-                    throw new ArgumentException("incorrect category", nameof(categoryMode));
-            }
-
-            var buttons = new InlineKeyboardButton[][] {
-
-                new InlineKeyboardButton[]
-                {
-                    InlineKeyboardButton.WithCallbackData(
-                        $"{result.From.AddDays(-7):dd.MM}-{result.From.AddMinutes(-1):dd.MM}", callbackDataPreviousWeekJson),
-
-                    InlineKeyboardButton.WithCallbackData(
-                        $"{result.To:dd.MM}-{result.To.AddDays(7).AddMinutes(-1):dd.MM}",callbackDataNextWeekJson )
-                },
-                new InlineKeyboardButton[]
-                {
-                       categoryModeButton
-                },
-            };
-            var inlineMarkup = new InlineKeyboardMarkup(buttons);
-
-            return (resultText, inlineMarkup);
-        }
-
-        private static string BuildWeekSpendingMessage(WeekSpending.Result result)
-        {
-            var builder = new StringBuilder();
-            builder.Append(result.From.CompactMarkdownV2Date());
-            builder.Append(" \\- ");
-            builder.Append(result.To.AddMinutes(-1).CompactMarkdownV2Date());
-            builder.Append(": `");
-            builder.Append(result.Sum.ToMoneyString());
-            builder.AppendLine("₽`");
-            foreach (var categoryRecord in result.ByCategory.OrderByDescending(cr => cr.Value))
-            {
-                builder.Append(Escape(categoryRecord.Key));
-                builder.Append(": `");
-                builder.Append(categoryRecord.Value.ToMoneyString());
-                builder.AppendLine("₽`");
-            }
-
-
-            return builder.ToString();
         }
 
 
@@ -333,9 +240,10 @@ namespace FinanceManage.TelegramBot
             return price;
         }
 
+        [Obsolete("Use MediatR service")]
         private async Task SendMainPanelMessage(ChatId chatId, string text, int replyToMessageId, ParseMode parseMode = ParseMode.Default, IReplyMarkup replyMarkup = default)
         {
-            replyMarkup ??= new ReplyKeyboardMarkup(topLevelCommands.Select(c => new KeyboardButton[] { new KeyboardButton(c) }), resizeKeyboard: true);
+            replyMarkup ??= new ReplyKeyboardMarkup(HandleTopLevelCommandMessage.TopLevelCommands.Select(c => new KeyboardButton[] { new KeyboardButton(c) }), resizeKeyboard: true);
             await telegramClient.SendTextMessageAsync(chatId, text, parseMode: parseMode, replyToMessageId: replyToMessageId,
                 replyMarkup: replyMarkup);
         }

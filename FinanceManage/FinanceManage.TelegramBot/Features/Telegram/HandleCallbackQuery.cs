@@ -36,12 +36,19 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                 try
                 {
                     data = JsonSerializer.Deserialize<InlineQueryBase>(request.CallbackQuery.Data, JsonOptions.InlineJeyboardOptions.Value);
+                    await HandleCallbackQuery(request, data, cancellationToken);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    logger.LogError(ex, "Can't handle callback query");
                     await mediator.Send(new SendMessage.Command(request.CallbackQuery.Message.Chat.Id, "Данная кнопка не поддерживается", request.CallbackQuery.Message.MessageId), cancellationToken);
                     return default;
                 }
+                return default;
+            }
+
+            private async Task HandleCallbackQuery(Command request, InlineQueryBase data, CancellationToken cancellationToken)
+            {
                 switch (data.Command)
                 {
                     case CallbackQueryCommand.WeekSpendingStatistic:
@@ -51,10 +58,8 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                         await telegramBotClient.EditMessageTextAsync(request.CallbackQuery.Message.Chat.Id, request.CallbackQuery.Message.MessageId, text, ParseMode.MarkdownV2, replyMarkup: markup, cancellationToken: cancellationToken);
                         break;
                     default:
-                        await mediator.Send(new SendMessage.Command(request.CallbackQuery.Message.Chat.Id, "Данная кнопка не поддерживается", request.CallbackQuery.Message.MessageId), cancellationToken);
-                        break;
+                        throw new ArgumentException($"Incorrect {nameof(CallbackQueryCommand)} - {data.Command}", nameof(data));
                 }
-                return default;
             }
         }
     }

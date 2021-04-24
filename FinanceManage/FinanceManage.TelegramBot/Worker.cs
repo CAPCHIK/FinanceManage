@@ -75,37 +75,11 @@ namespace FinanceManage.TelegramBot
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
             try
             {
-                await HandleCallbackQuery(mediator, e.CallbackQuery);
+                await mediator.Send(new HandleCallbackQuery.Command(e.CallbackQuery));
             }
             catch (MessageIsNotModifiedException ex)
             {
                 logger.LogWarning(ex, "try to set same text for message");
-            }
-        }
-
-        private async Task HandleCallbackQuery(IMediator mediator, CallbackQuery query)
-        {
-            InlineQueryBase data;
-            try
-            {
-                data = JsonSerializer.Deserialize<InlineQueryBase>(query.Data, jsonInlineButtonOptions);
-            }
-            catch
-            {
-                await SendMainPanelMessage(query.Message.Chat.Id, "Данная кнопка не поддерживается", query.Message.MessageId);
-                return;
-            }
-            switch (data.Command)
-            {
-                case CallbackQueryCommand.WeekSpendingStatistic:
-                    logger.LogInformation(query.Data);
-                    var weekSpendingStatisticData = JsonSerializer.Deserialize<WeekSpendingStatisticData>(query.Data, jsonInlineButtonOptions);
-                    var (text, markup) = await mediator.Send(new PrepareWeekSpendingMessage.Command(weekSpendingStatisticData.WeekStart, query.Message.Chat.Id, weekSpendingStatisticData.Category));
-                    await telegramClient.EditMessageTextAsync(query.Message.Chat.Id, query.Message.MessageId, text, ParseMode.MarkdownV2, replyMarkup: markup);
-                    break;
-                default:
-                    await SendMainPanelMessage(query.Message.Chat.Id, "Данная кнопка не поддерживается", query.Message.MessageId);
-                    break;
             }
         }
 

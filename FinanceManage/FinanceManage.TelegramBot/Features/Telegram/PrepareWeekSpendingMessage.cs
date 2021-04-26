@@ -52,7 +52,7 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                         categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.SeeNoEvilMonkey, toCompactJson);
                         break;
                     default:
-                        throw new ArgumentException("incorrect category", nameof(request.CategoryMode));
+                        throw new ArgumentException("incorrect category", nameof(request));
                 }
 
                 var buttons = new InlineKeyboardButton[][] {
@@ -80,14 +80,14 @@ namespace FinanceManage.TelegramBot.Features.Telegram
             {
                 var builder = new StringBuilder();
                 builder.Append(result.From.CompactMarkdownV2Date());
-                builder.Append(" \\- ");
+                builder.Append(" - ".EscapeAsMarkdownV2());
                 builder.Append(result.To.AddMinutes(-1).CompactMarkdownV2Date());
                 builder.Append(": `");
                 builder.Append(result.Sum.ToMoneyString());
                 builder.AppendLine("₽`");
                 foreach (var categoryRecord in result.ByCategory.OrderByDescending(cr => cr.Value))
                 {
-                    builder.Append(categoryRecord.Key);
+                    builder.Append(categoryRecord.Key.EscapeAsMarkdownV2());
                     builder.Append(": `");
                     builder.Append(categoryRecord.Value.ToMoneyString());
                     builder.AppendLine("₽`");

@@ -134,7 +134,7 @@ namespace FinanceManage.TelegramBot
             builder.AppendLine($"Сохранено");
 
             builder.Append(@"Категория: `");
-            builder.Append(Escape(command.Category));
+            builder.Append(command.Category.EscapeAsMarkdownV2());
             builder.AppendLine("`");
 
             builder.Append(@"Сумма: `");
@@ -251,11 +251,6 @@ namespace FinanceManage.TelegramBot
                 date = default;
                 return false;
             }
-        }
-
-        private static string Escape(string text)
-        {
-            return Regex.Replace(text, @"_|\*|\[|\]|\(|\)|~|`|>|#|\+|-|=|\\|{|}|\.|!", m => $"\\{m.Value}");
         }
     }
 }

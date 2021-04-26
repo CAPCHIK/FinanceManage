@@ -29,7 +29,8 @@ namespace FinanceManage.TelegramBot.Features.Telegram
             {
                 var dayStart = request.DayStart.Date;
                 var end = dayStart.Add(request.period);
-                logger.LogInformation($"start: {dayStart} end: {end}");
+                var daysCount = (end - dayStart);
+                logger.LogDebug($"start: {dayStart} end: {end} days count: {daysCount.Days}");
                 var fromDb = await dbContext.Purchases
                     .Where(p => p.TelegramChannelId == request.ChannelId)
                     .Where(p => p.Date >= dayStart)
@@ -40,7 +41,7 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                     .GroupBy(p => new { p.Date.Year, p.Date.Month, p.Date.Day })
                     .Select(g => g.Sum(p => p.Price))
                     .DefaultIfEmpty(0f)
-                    .Average();
+                    .Sum() / daysCount.Days;
             }
         }
     }

@@ -153,8 +153,8 @@ namespace FinanceManage.TelegramBot
             builder.AppendLine(@$"{Emoji.Calendar} {command.Date.ToString("yyyy.MM.dd").EscapeAsMarkdownV2()}");
             builder.AppendLine();
             builder.AppendLine(@$"{Emoji.BarChart} сегодня / среднее / %");
-            var averajeEmoji = today > averageMonth ? Emoji.ChartWithDownwardsTrend : Emoji.ChartWithUpwardsTrend;
-            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()} / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()} / {(int)(today / averageMonth * 100)}%");
+            var averajeEmoji = today < averageMonth ? Emoji.ChartWithDownwardsTrend : Emoji.ChartWithUpwardsTrend;
+            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()}₽ / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()}₽ / {(int)(today / averageMonth * 100)}%");
 
             return builder.ToString();
         }

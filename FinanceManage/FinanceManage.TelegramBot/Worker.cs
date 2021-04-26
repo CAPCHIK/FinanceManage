@@ -66,7 +66,13 @@ namespace FinanceManage.TelegramBot
         {
             using var scope = serviceScopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            await HandleMessage(mediator, args.Message);
+            try
+            {
+                await HandleMessage(mediator, args.Message);
+            } catch (ApiRequestException apiEx)
+            {
+                logger.LogError(apiEx, "Error while handling message");
+            }
         }
 
         private async void TelegramClient_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
@@ -118,7 +124,9 @@ namespace FinanceManage.TelegramBot
             var saveResult = await mediator.Send(command);
             if (saveResult)
             {
-                await SendMainPanelMessage(message.Chat, BuildSavedPurchaseMessage(command), parseMode: ParseMode.MarkdownV2, replyToMessageId: message.MessageId);
+                var today = await mediator.Send(new GetAverageSpendingPerDay.Command(message.Chat.Id, DateTimeOffset.UtcNow, TimeSpan.FromDays(1)));
+                var averageMonth = await mediator.Send(new GetAverageSpendingPerDay.Command(message.Chat.Id, DateTimeOffset.UtcNow.AddDays(-30), TimeSpan.FromDays(30)));
+                await SendMainPanelMessage(message.Chat, BuildSavedPurchaseMessage(command, today, averageMonth), parseMode: ParseMode.MarkdownV2, replyToMessageId: message.MessageId);
             }
             else
             {
@@ -128,22 +136,18 @@ namespace FinanceManage.TelegramBot
         }
 
 
-        private static string BuildSavedPurchaseMessage(SavePurchase.Command command)
+        private static string BuildSavedPurchaseMessage(SavePurchase.Command command, float today, float averageMonth)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"Сохранено");
 
-            builder.Append(@"Категория: `");
-            builder.Append(command.Category.EscapeAsMarkdownV2());
-            builder.AppendLine("`");
-
-            builder.Append(@"Сумма: `");
-            builder.Append(command.Price.ToMoneyString());
-            builder.AppendLine("₽`");
-
-            builder.Append(@"Дата: `");
-            builder.Append(command.Date.ToString("yyyy.MM.dd"));
-            builder.AppendLine("`");
+            builder.AppendLine(@$"{Emoji.Shopping} {command.Category.EscapeAsMarkdownV2()}");
+            builder.AppendLine(@$"{Emoji.Money} {command.Price.ToMoneyString().EscapeAsMarkdownV2()}₽");
+            builder.AppendLine(@$"{Emoji.Calendar} {command.Date.ToString("yyyy.MM.dd").EscapeAsMarkdownV2()}");
+            builder.AppendLine();
+            builder.AppendLine(@$"{Emoji.BarChart} сегодня / среднее");
+            var averajeEmoji = today > averageMonth ? Emoji.ChartWithDownwardsTrend : Emoji.ChartWithUpwardsTrend;
+            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()} / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()}");
 
             return builder.ToString();
         }
@@ -217,6 +221,7 @@ namespace FinanceManage.TelegramBot
         [Obsolete("Use MediatR service")]
         private async Task SendMainPanelMessage(ChatId chatId, string text, int replyToMessageId, ParseMode parseMode = ParseMode.Default, IReplyMarkup replyMarkup = default)
         {
+            logger.LogDebug($"Send message >>{text}<< to chat {chatId}");
             replyMarkup ??= new ReplyKeyboardMarkup(HandleTopLevelCommandMessage.TopLevelCommands.Select(c => new KeyboardButton[] { new KeyboardButton(c) }), resizeKeyboard: true);
             await telegramClient.SendTextMessageAsync(chatId, text, parseMode: parseMode, replyToMessageId: replyToMessageId,
                 replyMarkup: replyMarkup);

@@ -10,5 +10,11 @@ namespace FinanceManage.TelegramBot
     {
         public const string SeeNoEvilMonkey = "🙈";
         public const string HearNoEvilMonkey = "🙉";
+        public const string ChartWithUpwardsTrend = "📈";
+        public const string ChartWithDownwardsTrend = "📉";
+        public const string BarChart = "📊";
+        public const string Shopping = "🛍";
+        public const string Money = "💳";
+        public const string Calendar = "🗓";
     }
 }

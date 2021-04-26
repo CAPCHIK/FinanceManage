@@ -139,15 +139,22 @@ namespace FinanceManage.TelegramBot
         private static string BuildSavedPurchaseMessage(SavePurchase.Command command, float today, float averageMonth)
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"Сохранено");
+            builder.AppendLine($"{Emoji.MailWithDownArrow} Сохранено");
+            builder.AppendLine();
 
-            builder.AppendLine(@$"{Emoji.Shopping} {command.Category.EscapeAsMarkdownV2()}");
+            string categoryRow = command.Category;
+            var words = categoryRow.Split(' ');
+
+            categoryRow = $"*{words[0].EscapeAsMarkdownV2()}* _{string.Join(' ', words.Skip(1)).EscapeAsMarkdownV2()}_";
+            
+
+            builder.AppendLine(@$"{Emoji.Shopping} {categoryRow}");
             builder.AppendLine(@$"{Emoji.Money} {command.Price.ToMoneyString().EscapeAsMarkdownV2()}₽");
             builder.AppendLine(@$"{Emoji.Calendar} {command.Date.ToString("yyyy.MM.dd").EscapeAsMarkdownV2()}");
             builder.AppendLine();
-            builder.AppendLine(@$"{Emoji.BarChart} сегодня / среднее");
+            builder.AppendLine(@$"{Emoji.BarChart} сегодня / среднее / %");
             var averajeEmoji = today > averageMonth ? Emoji.ChartWithDownwardsTrend : Emoji.ChartWithUpwardsTrend;
-            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()} / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()}");
+            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()} / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()} / {(int)(today / averageMonth * 100)}%");
 
             return builder.ToString();
         }

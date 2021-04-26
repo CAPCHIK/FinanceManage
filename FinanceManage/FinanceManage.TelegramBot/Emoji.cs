@@ -16,5 +16,6 @@ namespace FinanceManage.TelegramBot
         public const string Shopping = "🛍";
         public const string Money = "💳";
         public const string Calendar = "🗓";
+        public const string MailWithDownArrow = "📩";
     }
 }

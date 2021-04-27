@@ -24,12 +24,8 @@ jobs:
             service-name: fin-manage_site
     steps:
       - uses: actions/checkout@v2
-      - name: Generate build number
-        uses: einaregilsson/build-number@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
       - name: Print new build number
-        run: echo "Build number is $BUILD_NUMBER"
+        run: echo "Build number is $GITHUB_RUN_ID"
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
@@ -56,9 +52,9 @@ jobs:
           echo IMAGE_ID=$IMAGE_ID
 
           docker tag $IMAGE_ID $IMAGE_ID:latest
-          docker tag $IMAGE_ID $IMAGE_ID:build-$BUILD_NUMBER
+          docker tag $IMAGE_ID $IMAGE_ID:build-$GITHUB_RUN_ID
           docker push $IMAGE_ID:latest
-          docker push $IMAGE_ID:build-$BUILD_NUMBER
+          docker push $IMAGE_ID:build-$GITHUB_RUN_ID
       - name: Update service
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
@@ -69,5 +65,5 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: IMAGE_ID,BUILD_NUMBER,SERVICE_NAME
-          script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER $SERVICE_NAME
+          envs: IMAGE_ID,GITHUB_RUN_ID,SERVICE_NAME
+          script: docker service update --image $IMAGE_ID:build-$GITHUB_RUN_ID $SERVICE_NAME

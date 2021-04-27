@@ -8,7 +8,20 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    name: ${{ matrix.name }}
+    strategy:
+      matrix:
+        include:
+          - name: 'telegram bot'
+            image-id: docker.pkg.github.com/capchik/financemanage/tg-bot
+            build-folder: deploy/tg_bot
+            nuke-task: PublishTgBot
+            service-name: fin-manage_tg_bot
+          - name: 'site'
+            image-id: docker.pkg.github.com/capchik/financemanage/site
+            build-folder: deploy/site
+            nuke-task: PublishSite
+            service-name: fin-manage_site
     steps:
       - uses: actions/checkout@v2
       - name: Generate build number
@@ -21,17 +34,24 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 5.0.x
-      - name: Restore dependencies
+      - name: Restore nuke tool
         run: dotnet tool restore
       - name: Build
-        run: dotnet nuke
+        env:
+          NUKE_TASK: ${{ matrix.nuke-task }}
+        run: dotnet nuke $NUKE_TASK
       - name: Build docker image
-        run: docker build -t $IMAGE_ID ./deploy
+        env:
+          IMAGE_ID: ${{ matrix.image-id }}
+          BUILD_FOLDER: ${{ matrix.build-folder }}
+        run: docker build -t $IMAGE_ID $BUILD_FOLDER
       - name: Log into registry
         if: ${{ github.ref == 'refs/heads/master' }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
       - name: Push image
         if: ${{ github.ref == 'refs/heads/master' }}
+        env:
+          IMAGE_ID: ${{ matrix.image-id }}
         run: |
           echo IMAGE_ID=$IMAGE_ID
 
@@ -41,10 +61,13 @@ jobs:
           docker push $IMAGE_ID:build-$BUILD_NUMBER
       - name: Update service
         if: ${{ github.ref == 'refs/heads/master' }}
+        env:
+          IMAGE_ID: ${{ matrix.image-id }}
+          SERVICE_NAME: ${{ matrix.service-name }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: IMAGE_ID,BUILD_NUMBER
-          script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER fin-manage_tg_bot
+          envs: IMAGE_ID,BUILD_NUMBER,SERVICE_NAME
+          script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER $SERVICE_NAME

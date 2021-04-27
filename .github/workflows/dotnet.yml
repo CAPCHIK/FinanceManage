@@ -13,7 +13,7 @@ jobs:
         include:
           - image-id: docker.pkg.github.com/capchik/financemanage/tg-bot
             build-folder: deploy/tg_bot
-            nuke-task: PublishBot
+            nuke-task: PublishTgBot
             service-name: fin-manage_tg_bot
           - image-id: docker.pkg.github.com/capchik/financemanage/site
             build-folder: deploy/site

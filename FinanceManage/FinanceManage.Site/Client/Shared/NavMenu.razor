@@ -1,5 +1,7 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">FinanceManage.Site</a>
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration 
+
+<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">FinanceManage <sub>(@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value)</sub></a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>

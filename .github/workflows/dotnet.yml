@@ -35,7 +35,7 @@ jobs:
       - name: Build
         env:
           NUKE_TASK: ${{ matrix.nuke-task }}
-        run: dotnet nuke $NUKE_TASK
+        run: dotnet nuke $NUKE_TASK --build-id $GITHUB_RUN_NUMBER
       - name: Build docker image
         env:
           IMAGE_ID: ${{ matrix.image-id }}

@@ -363,9 +363,11 @@ MigrationBackup/
 FodyWeavers.xsd
 
 
-deploy/build
+deploy/site/build
+deploy/tg_bot/build
 postgres-data
 environment.ps1
 .env
 stack.yml
 /FinanceManage/FinanceManage.TelegramBot/appsettings.Local.json
+.nuke

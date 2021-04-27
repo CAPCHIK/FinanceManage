@@ -32,15 +32,17 @@ class Build : NukeBuild
     [Solution] readonly Solution Solution;
     [GitRepository] readonly GitRepository GitRepository;
 
-    AbsolutePath SourceDirectory => RootDirectory / "FinanceManage";
-    AbsolutePath OutputDirectory => RootDirectory / "deploy" / "build";
+    static AbsolutePath SourceDirectory => RootDirectory / "FinanceManage";
+    static AbsolutePath TgBotOutputDirectory => RootDirectory / "deploy" / "tg_bot" / "build";
+    static AbsolutePath SiteOutputDirectory => RootDirectory / "deploy" / "site" / "build";
 
     Target Clean => _ => _
         .Before(Restore)
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
-            EnsureCleanDirectory(OutputDirectory);
+            EnsureCleanDirectory(TgBotOutputDirectory);
+            EnsureCleanDirectory(SiteOutputDirectory);
         });
 
     Target Restore => _ => _
@@ -49,24 +51,29 @@ class Build : NukeBuild
             DotNetRestore(s => s
                 .SetProjectFile(Solution));
         });
-
-    Target Compile => _ => _
-        .DependsOn(Restore)
-        .Executes(() =>
-        {
-            DotNetBuild(s => s
-                .SetProjectFile(Solution)
-                .SetConfiguration(Configuration)
-                .EnableNoRestore());
-        });
-    Target Publish => _ => _
+    Target PublishTgBot => _ => _
         .DependsOn(Restore, Clean)
         .Executes(() =>
         {
             DotNetPublish(s => s
                 .SetProject(Solution.GetProject("FinanceManage.TelegramBot"))
                 .SetConfiguration(Configuration)
-                .SetOutput(OutputDirectory)
+                .SetOutput(TgBotOutputDirectory)
                 .EnableNoRestore());
+        });
+    Target PublishSite => _ => _
+        .DependsOn(Restore, Clean)
+        .Executes(() =>
+        {
+            DotNetPublish(s => s
+                .SetProject(Solution.GetProject("FinanceManage.Site.Server"))
+                .SetConfiguration(Configuration)
+                .SetOutput(SiteOutputDirectory)
+                .EnableNoRestore());
+        });
+    Target Publish => _ => _
+        .DependsOn(PublishTgBot, PublishSite)
+        .Executes(() =>
+        {
         });
 }

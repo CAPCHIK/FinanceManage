@@ -8,14 +8,17 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    name: ${{ matrix.name }}
     strategy:
       matrix:
         include:
-          - image-id: docker.pkg.github.com/capchik/financemanage/tg-bot
+          - name: 'telegram bot'
+            image-id: docker.pkg.github.com/capchik/financemanage/tg-bot
             build-folder: deploy/tg_bot
             nuke-task: PublishTgBot
             service-name: fin-manage_tg_bot
-          - image-id: docker.pkg.github.com/capchik/financemanage/site
+          - name: 'site'
+            image-id: docker.pkg.github.com/capchik/financemanage/site
             build-folder: deploy/site
             nuke-task: PublishSite
             service-name: fin-manage_site

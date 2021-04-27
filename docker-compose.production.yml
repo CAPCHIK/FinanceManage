@@ -9,3 +9,11 @@ services:
                 limits:
                     cpus: '0.80'
                     memory: 150M
+    site:
+        environment:
+            - ConnectionStrings__Database=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+        deploy:
+            resources:
+                limits:
+                    cpus: '0.80'
+                    memory: 150M

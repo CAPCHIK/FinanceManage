@@ -69,5 +69,5 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          envs: IMAGE_ID,BUILD_NUMBER
+          envs: IMAGE_ID,BUILD_NUMBER,SERVICE_NAME
           script: docker service update --image $IMAGE_ID:build-$BUILD_NUMBER $SERVICE_NAME

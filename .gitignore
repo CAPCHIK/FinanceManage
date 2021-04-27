@@ -367,6 +367,7 @@ deploy/site/build
 deploy/tg_bot/build
 postgres-data
 environment.ps1
+environment.prod.ps1
 .env
 stack.yml
 /FinanceManage/FinanceManage.TelegramBot/appsettings.Local.json

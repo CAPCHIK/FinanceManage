@@ -14,11 +14,13 @@ jobs:
         include:
           - name: 'telegram bot'
             image-id: docker.pkg.github.com/capchik/financemanage/tg-bot
+            package-id: tg-bot
             build-folder: deploy/tg_bot
             nuke-task: PublishTgBot
             service-name: fin-manage_tg_bot
           - name: 'site'
             image-id: docker.pkg.github.com/capchik/financemanage/site
+            package-id: site
             build-folder: deploy/site
             nuke-task: PublishSite
             service-name: fin-manage_site
@@ -44,6 +46,11 @@ jobs:
       - name: Log into registry
         if: ${{ github.ref == 'refs/heads/master' }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
+      - name: Delete old package
+        if: ${{ github.ref == 'refs/heads/master' }}
+        uses: actions/delete-package-versions@v1
+        with:
+          package-name: ${{ matrix.package-id }}
       - name: Push image
         if: ${{ github.ref == 'refs/heads/master' }}
         env:
@@ -51,10 +58,10 @@ jobs:
         run: |
           echo IMAGE_ID=$IMAGE_ID
 
-          docker tag $IMAGE_ID $IMAGE_ID:latest
           docker tag $IMAGE_ID $IMAGE_ID:build-$GITHUB_RUN_NUMBER
-          docker push $IMAGE_ID:latest
+          docker tag $IMAGE_ID $IMAGE_ID:latest
           docker push $IMAGE_ID:build-$GITHUB_RUN_NUMBER
+          docker push $IMAGE_ID:latest
       - name: Update service
         if: ${{ github.ref == 'refs/heads/master' }}
         env:

@@ -3,19 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31129.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Server", "FinanceManage\Server\FinanceManage.Server.csproj", "{5B1311B0-530B-4EEB-B7E9-106F76AC6DCC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Client", "FinanceManage\Client\FinanceManage.Client.csproj", "{6A6D81D1-AABE-4690-8B26-AB4F4D72250A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Shared", "FinanceManage\Shared\FinanceManage.Shared.csproj", "{9D876829-0243-4FCC-AFFE-0E40D87C21D6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "build\_build.csproj", "{FC3A8694-B672-4D67-BBDD-3AEA818DCC81}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.TelegramBot", "FinanceManage\FinanceManage.TelegramBot\FinanceManage.TelegramBot.csproj", "{364E3A56-EBE1-4FC3-AD88-7B37C0860F5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.Models", "FinanceManage\FinanceManage.Models\FinanceManage.Models.csproj", "{9C3FDFAB-823A-41C7-B89B-D2B7D3750762}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Models", "FinanceManage\FinanceManage.Models\FinanceManage.Models.csproj", "{9C3FDFAB-823A-41C7-B89B-D2B7D3750762}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.Database", "FinanceManage\FinanceManage.Database\FinanceManage.Database.csproj", "{3F8513AA-0420-4DBF-B571-048761B3A4D2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Database", "FinanceManage\FinanceManage.Database\FinanceManage.Database.csproj", "{3F8513AA-0420-4DBF-B571-048761B3A4D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,18 +17,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5B1311B0-530B-4EEB-B7E9-106F76AC6DCC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5B1311B0-530B-4EEB-B7E9-106F76AC6DCC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5B1311B0-530B-4EEB-B7E9-106F76AC6DCC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5B1311B0-530B-4EEB-B7E9-106F76AC6DCC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6A6D81D1-AABE-4690-8B26-AB4F4D72250A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6A6D81D1-AABE-4690-8B26-AB4F4D72250A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6A6D81D1-AABE-4690-8B26-AB4F4D72250A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6A6D81D1-AABE-4690-8B26-AB4F4D72250A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D876829-0243-4FCC-AFFE-0E40D87C21D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D876829-0243-4FCC-AFFE-0E40D87C21D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D876829-0243-4FCC-AFFE-0E40D87C21D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D876829-0243-4FCC-AFFE-0E40D87C21D6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{FC3A8694-B672-4D67-BBDD-3AEA818DCC81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FC3A8694-B672-4D67-BBDD-3AEA818DCC81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{364E3A56-EBE1-4FC3-AD88-7B37C0860F5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

@@ -1,5 +1,6 @@
 ﻿using FinanceManage.TelegramBot.InlineQueryModels;
 using MediatR;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,10 +20,12 @@ namespace FinanceManage.TelegramBot.Features.Telegram
         public class Handler : IRequestHandler<Command, Response>
         {
             private readonly IMediator mediator;
+            private readonly ILogger<Handler> logger;
 
-            public Handler(IMediator mediator)
+            public Handler(IMediator mediator, ILogger<Handler> logger)
             {
                 this.mediator = mediator;
+                this.logger = logger;
             }
             public async Task<Response> Handle(Command request, CancellationToken cancellationToken)
             {
@@ -31,6 +34,8 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                     request.ChatId,
                     request.CategoryMode), cancellationToken);
                 string resultText = BuildWeekSpendingMessage(result);
+
+                logger.LogDebug($"week message: {resultText}");
 
                 var callbackDataPreviousWeek = new WeekSpendingStatisticData(result.From.AddDays(-7), request.CategoryMode);
                 var callbackDataPreviousWeekJson = JsonSerializer.Serialize(callbackDataPreviousWeek, JsonOptions.InlineJeyboardOptions.Value);
@@ -82,9 +87,9 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                 builder.Append(result.From.CompactMarkdownV2Date());
                 builder.Append(" - ".EscapeAsMarkdownV2());
                 builder.Append(result.To.AddMinutes(-1).CompactMarkdownV2Date());
-                builder.Append(": `");
-                builder.Append(result.Sum.ToMoneyString());
-                builder.AppendLine("₽`");
+                builder.Append(": *__");
+                builder.Append(result.Sum.ToMoneyString().EscapeAsMarkdownV2());
+                builder.AppendLine("__₽*");
                 foreach (var categoryRecord in result.ByCategory.OrderByDescending(cr => cr.Value))
                 {
                     builder.Append(categoryRecord.Key.EscapeAsMarkdownV2());

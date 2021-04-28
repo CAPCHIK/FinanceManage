@@ -1,11 +1,47 @@
 ﻿@inherits LayoutComponentBase
-@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 
+@implements IDisposable
+
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@using System.Text.Json.Serialization
 <Layout Style="min-height: 100vh;">
     <Header>
         <Text style="color: white;">FinanceManage <sub>(@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value)</sub></Text>
     </Header>
     <Content>
-        @Body
+        @if (isAuth)
+        {
+
+            @Body
+        }
+        else
+        {
+            <Row Justify="center" Style="margin-top: 100px">
+                <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
+                    <FinanceManage.Site.Client.Pages.TelegramSignInWidget />
+                </AntDesign.Col>
+            </Row>
+        }
     </Content>
 </Layout>
+
+@code {
+    bool isAuth = false;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        TelegramAuthListener.UserAuthenticated += OnUserAuth;
+    }
+
+    private void OnUserAuth(TelegramAuthListener.TelegramUserInfo user)
+    {
+        isAuth = true;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        TelegramAuthListener.UserAuthenticated -= OnUserAuth;
+    }
+}

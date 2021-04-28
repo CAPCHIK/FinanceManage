@@ -21,7 +21,7 @@
         {
             var r = new Random(120);
             var categories = new string[] { "cat1", "cat2", "cat3" };
-            var data4 = Enumerable.Range(1, 10).Select(d => categories.Select(c => new EmissionItem
+            var data4 = Enumerable.Range(1, 10).Select(d => categories.Skip(0).Select(c => new EmissionItem
             {
                 Category = c,
                 Date = $"2021-04-{d}",

@@ -27,6 +27,11 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script type="text/javascript">
+        function onTelegramAuth(user) {
+            DotNet.invokeMethod("FinanceManage.Site.Client", "UserAuthCallback", user);
+        }
+    </script>
 </body>
 
 </html>

@@ -1,0 +1,61 @@
+﻿@page "/weekStatistic"
+@using AntDesign.Charts
+
+
+@inject HttpClient HttpClient
+<StackedArea @ref="chart4" TItem="EmissionItem" Config="config4" />
+
+@code{
+    class EmissionItem
+    {
+        public string Date { get; set; }
+        public double Value { get; set; }
+        public string Category { get; set; }
+    }
+    IChartComponent chart4;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        if (firstRender)
+        {
+            var r = new Random(120);
+            var categories = new string[] { "cat1", "cat2", "cat3" };
+            var data4 = Enumerable.Range(1, 10).Select(d => categories.Skip(0).Select(c => new EmissionItem
+            {
+                Category = c,
+                Date = $"2021-04-{d}",
+                Value = Math.Round(r.NextDouble() * 1500, 2)
+            })).SelectMany(s => s).ToList();
+            chart4.ChangeData(data4);
+        }
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    readonly StackedAreaConfig config4 = new StackedAreaConfig
+    {
+        Title = new AntDesign.Charts.Title
+        {
+            Visible = true,
+            Text = "The causes of CO2 emissions"
+        },
+        XField = "date",
+        YField = "value",
+        SeriesField = "category",
+        XAxis = new ValueCatTimeAxis
+        {
+            Type = "dateTime",
+            Mask = "YYYY-MM-D",
+            Visible = true,
+            Label = new BaseAxisLabel
+            {
+                Visible = true,
+                AutoRotate = true,
+                AutoHide = true
+            }
+        },
+    };
+}

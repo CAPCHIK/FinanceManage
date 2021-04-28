@@ -11,13 +11,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Models", "Fin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Database", "FinanceManage\FinanceManage.Database\FinanceManage.Database.csproj", "{3F8513AA-0420-4DBF-B571-048761B3A4D2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.Site.Server", "FinanceManage\FinanceManage.Site\Server\FinanceManage.Site.Server.csproj", "{5F1F2A27-FFCE-4E0D-8974-A4BB84C8A2CD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Site.Server", "FinanceManage\FinanceManage.Site\Server\FinanceManage.Site.Server.csproj", "{5F1F2A27-FFCE-4E0D-8974-A4BB84C8A2CD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.Site.Client", "FinanceManage\FinanceManage.Site\Client\FinanceManage.Site.Client.csproj", "{F1E77C71-8184-42AB-8C06-1B64C64F3084}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Site.Client", "FinanceManage\FinanceManage.Site\Client\FinanceManage.Site.Client.csproj", "{F1E77C71-8184-42AB-8C06-1B64C64F3084}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.Site.Shared", "FinanceManage\FinanceManage.Site\Shared\FinanceManage.Site.Shared.csproj", "{72BE4E15-6246-4989-B5C3-DEDCF9E693C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Site.Shared", "FinanceManage\FinanceManage.Site\Shared\FinanceManage.Site.Shared.csproj", "{72BE4E15-6246-4989-B5C3-DEDCF9E693C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BuildConfiguration", "BuildConfiguration\BuildConfiguration.csproj", "{BBD2B86D-1005-4F9B-A144-474655936924}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildConfiguration", "BuildConfiguration\BuildConfiguration.csproj", "{BBD2B86D-1005-4F9B-A144-474655936924}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -56,15 +56,23 @@
             await LocalStorage.ClearAsync();
             await LocalStorage.SetItemAsync(nameof(version), Configuration.GetSection("Version").Value);
         }
-        var telegramUserInfo = await LocalStorage.GetItemAsync<TelegramUserInfo>("telegramUserInfo");
-        if (telegramUserInfo == null)
+        try
+        {
+            var telegramUserInfo = await LocalStorage.GetItemAsync<TelegramUserInfo>("telegramUserInfo");
+            if (telegramUserInfo == null)
+            {
+                LocalAuthState = AuthState.NotAuthorized;
+            }
+            else
+            {
+                LocalAuthState = (await TryLoginAsUser(telegramUserInfo)) ? AuthState.Authorized : AuthState.NotAuthorized;
+            }
+        }
+        catch
         {
             LocalAuthState = AuthState.NotAuthorized;
         }
-        else
-        {
-            LocalAuthState = (await TryLoginAsUser(telegramUserInfo)) ? AuthState.Authorized : AuthState.NotAuthorized;
-        }
+
         TelegramAuthListener.UserAuthenticated += OnUserAuth;
     }
 
@@ -76,6 +84,7 @@
         var response = await HttpClient.PostAsJsonAsync("/api/auth", user);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
+            await LocalStorage.RemoveItemAsync("telegramUserInfo");
             await LocalStorage.SetItemAsync("telegramUserInfo", user);
             return true;
         }

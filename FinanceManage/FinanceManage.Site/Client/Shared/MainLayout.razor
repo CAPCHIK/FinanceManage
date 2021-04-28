@@ -1,32 +1,51 @@
 ﻿@inherits LayoutComponentBase
 
+@using System.Text.Json
+
 @implements IDisposable
 
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
 @inject ILocalStorageService LocalStorage
+@inject HttpClient HttpClient
 <Layout Style="min-height: 100vh;">
     <Header>
         <Text style="color: white;">FinanceManage <sub>(@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value)</sub></Text>
     </Header>
     <Content>
-        @if (isAuth)
+        @switch (LocalAuthState)
         {
-
-            @Body
-        }
-        else
-        {
-            <Row Justify="center" Style="margin-top: 100px">
-                <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
-                    <FinanceManage.Site.Client.Pages.TelegramSignInWidget />
-                </AntDesign.Col>
-            </Row>
+            case AuthState.Authorizing:
+                <Row Justify="center" Style="margin-top: 100px">
+                    <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
+                        <Spin Spinning="true" Tip="Authenticating..." Size="large" />
+                    </AntDesign.Col>
+                </Row>
+                break;
+            case AuthState.NotAuthorized:
+                <Row Justify="center" Style="margin-top: 100px">
+                    <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
+                        <FinanceManage.Site.Client.Pages.TelegramSignInWidget />
+                    </AntDesign.Col>
+                </Row>
+                break;
+            case AuthState.Authorized:
+                @Body
+                break;
+            default:
+                <p>Incorrect State</p>
+                break;
         }
     </Content>
 </Layout>
 
 @code {
-    bool isAuth = false;
+    enum AuthState
+    {
+        Authorizing,
+        NotAuthorized,
+        Authorized
+    }
+    AuthState LocalAuthState { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -34,32 +53,38 @@
         var version = await LocalStorage.GetItemAsync<string>("version");
         if (version != Configuration.GetSection("Version").Value)
         {
-            Console.WriteLine("clearing");
             await LocalStorage.ClearAsync();
             await LocalStorage.SetItemAsync(nameof(version), Configuration.GetSection("Version").Value);
         }
-        var telegramUserInfo = await LocalStorage.GetItemAsync<TelegramAuthListener.TelegramUserInfo>("telegramUserInfo");
+        var telegramUserInfo = await LocalStorage.GetItemAsync<TelegramUserInfo>("telegramUserInfo");
         if (telegramUserInfo == null)
         {
-            isAuth = false;
+            LocalAuthState = AuthState.NotAuthorized;
         }
         else
         {
-            isAuth = await TryLoginAsUser(telegramUserInfo);
+            LocalAuthState = (await TryLoginAsUser(telegramUserInfo)) ? AuthState.Authorized : AuthState.NotAuthorized;
         }
         TelegramAuthListener.UserAuthenticated += OnUserAuth;
     }
 
-    private async Task<bool> TryLoginAsUser(TelegramAuthListener.TelegramUserInfo user)
+    private async Task<bool> TryLoginAsUser(TelegramUserInfo user)
     {
-        Console.WriteLine("Sending request to server, return true while");
-        await LocalStorage.SetItemAsync("telegramUserInfo", user);
-        return true;
+        HttpClient.DefaultRequestHeaders.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("TelegramWidget",
+                Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(user))));
+        var response = await HttpClient.PostAsJsonAsync("/api/auth", user);
+        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+        {
+            await LocalStorage.SetItemAsync("telegramUserInfo", user);
+            return true;
+        }
+        return false;
     }
 
-    private async void OnUserAuth(TelegramAuthListener.TelegramUserInfo user)
+    private async void OnUserAuth(TelegramUserInfo user)
     {
-        isAuth = await TryLoginAsUser(user);
+        LocalAuthState = (await TryLoginAsUser(user)) ? AuthState.Authorized : AuthState.NotAuthorized;
         StateHasChanged();
     }
 

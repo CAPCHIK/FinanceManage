@@ -1,5 +1,5 @@
 using FinanceManage.Database;
-using FinanceManage.TelegramBot.Models.Options;
+using FinanceManage.Models.ServerSide.Options;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

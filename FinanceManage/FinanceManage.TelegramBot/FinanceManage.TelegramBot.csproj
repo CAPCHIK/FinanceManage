@@ -21,5 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FinanceManage.Database\FinanceManage.Database.csproj" />
+    <ProjectReference Include="..\Models.ServerSide\Models.ServerSide.csproj" />
   </ItemGroup>
 </Project>

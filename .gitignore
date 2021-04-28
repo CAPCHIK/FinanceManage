@@ -372,3 +372,4 @@ environment.prod.ps1
 stack.yml
 /FinanceManage/FinanceManage.TelegramBot/appsettings.Local.json
 .nuke
+/FinanceManage/FinanceManage.Site/Server/appsettings.Local.json

@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Site.Shared",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildConfiguration", "BuildConfiguration\BuildConfiguration.csproj", "{BBD2B86D-1005-4F9B-A144-474655936924}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models.ServerSide", "FinanceManage\Models.ServerSide\Models.ServerSide.csproj", "{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{BBD2B86D-1005-4F9B-A144-474655936924}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BBD2B86D-1005-4F9B-A144-474655936924}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BBD2B86D-1005-4F9B-A144-474655936924}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

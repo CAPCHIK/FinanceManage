@@ -1,3 +1,5 @@
+using FinanceManage.Models.ServerSide.Options;
+using FinanceManage.Site.Server.AuthenticationHandlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -21,9 +23,17 @@ namespace FinanceManage.Site.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-
+            services.Configure<TelegramBotOptions>(Configuration.GetSection(nameof(TelegramBotOptions)));
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultScheme
+                    = AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme;
+            })
+            .AddScheme<TelegramWidgetOptions, TelegramWidgetAuthenticationHandler>
+                    (AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme, op => { });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -43,6 +53,9 @@ namespace FinanceManage.Site.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

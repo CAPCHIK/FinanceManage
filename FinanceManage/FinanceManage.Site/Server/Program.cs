@@ -18,6 +18,7 @@ namespace FinanceManage.Site.Server
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration(config => config.AddJsonFile("appsettings.Local.json"))
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();

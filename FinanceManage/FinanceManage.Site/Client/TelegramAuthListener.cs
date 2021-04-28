@@ -13,7 +13,6 @@ namespace FinanceManage.Site.Client
         [JSInvokable]
         public static void UserAuthCallback(TelegramUserInfo user)
         {
-            Console.WriteLine("auth done");
             UserAuthenticated?.Invoke(user);
         }
 

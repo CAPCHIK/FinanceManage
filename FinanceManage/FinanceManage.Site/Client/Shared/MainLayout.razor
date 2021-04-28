@@ -3,7 +3,7 @@
 @implements IDisposable
 
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
-@using System.Text.Json.Serialization
+@inject ILocalStorageService LocalStorage
 <Layout Style="min-height: 100vh;">
     <Header>
         <Text style="color: white;">FinanceManage <sub>(@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value)</sub></Text>
@@ -28,15 +28,38 @@
 @code {
     bool isAuth = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        base.OnInitialized();
+        await base.OnInitializedAsync();
+        var version = await LocalStorage.GetItemAsync<string>("version");
+        if (version != Configuration.GetSection("Version").Value)
+        {
+            Console.WriteLine("clearing");
+            await LocalStorage.ClearAsync();
+            await LocalStorage.SetItemAsync(nameof(version), Configuration.GetSection("Version").Value);
+        }
+        var telegramUserInfo = await LocalStorage.GetItemAsync<TelegramAuthListener.TelegramUserInfo>("telegramUserInfo");
+        if (telegramUserInfo == null)
+        {
+            isAuth = false;
+        }
+        else
+        {
+            isAuth = await TryLoginAsUser(telegramUserInfo);
+        }
         TelegramAuthListener.UserAuthenticated += OnUserAuth;
     }
 
-    private void OnUserAuth(TelegramAuthListener.TelegramUserInfo user)
+    private async Task<bool> TryLoginAsUser(TelegramAuthListener.TelegramUserInfo user)
     {
-        isAuth = true;
+        Console.WriteLine("Sending request to server, return true while");
+        await LocalStorage.SetItemAsync("telegramUserInfo", user);
+        return true;
+    }
+
+    private async void OnUserAuth(TelegramAuthListener.TelegramUserInfo user)
+    {
+        isAuth = await TryLoginAsUser(user);
         StateHasChanged();
     }
 

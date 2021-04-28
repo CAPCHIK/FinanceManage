@@ -28,8 +28,11 @@
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
     <script type="text/javascript">
+        window.saveAuthReference = function (reference) {
+            window.authHandlerReference = reference;
+        }
         function onTelegramAuth(user) {
-            DotNet.invokeMethod("FinanceManage.Site.Client", "UserAuthCallback", user);
+            window.authHandlerReference.invokeMethodAsync("UserAuthCallback", user);
         }
     </script>
 </body>

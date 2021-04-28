@@ -1,4 +1,5 @@
 using Blazored.LocalStorage;
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,6 +22,11 @@ namespace FinanceManage.Site.Client
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddAntDesign();
             builder.Services.AddBlazoredLocalStorage();
+
+            builder.Services.AddScoped<AuthenticationStateProvider, TelegramWidgetAuthenticationProvider>();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped<ILogoutService>(sp => sp.GetRequiredService<AuthenticationStateProvider>() as TelegramWidgetAuthenticationProvider);
+
             await builder.Build().RunAsync();
         }
     }

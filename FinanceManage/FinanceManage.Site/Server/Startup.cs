@@ -1,5 +1,6 @@
 using FinanceManage.Models.ServerSide.Options;
 using FinanceManage.Site.Server.AuthenticationHandlers;
+using FinanceManage.Site.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;

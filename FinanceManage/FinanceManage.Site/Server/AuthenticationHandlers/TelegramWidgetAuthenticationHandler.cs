@@ -87,18 +87,7 @@ namespace FinanceManage.Site.Server.AuthenticationHandlers
                 return AuthenticateResult.Fail($"Incorrect telegram info: {authResult}");
             }
 
-            var claims = new[] {
-                    new Claim(ClaimTypes.NameIdentifier, userInfo.Id.ToString()),
-                    new Claim(ClaimTypes.Name, userInfo.UserName),
-                    new Claim(ClaimTypes.GivenName, userInfo.FirstName),
-                    new Claim(ClaimTypes.Surname, userInfo.LastName),
-                    new Claim(ClaimTypes.DateOfBirth, userInfo.AuthDate.ToString())
-            };
-
-            var claimsIdentity = new ClaimsIdentity(claims,
-                            nameof(TelegramWidgetAuthenticationHandler));
-
-            return AuthenticateResult.Success(new AuthenticationTicket(new ClaimsPrincipal(claimsIdentity), AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme));
+            return AuthenticateResult.Success(new AuthenticationTicket(TelegramWidgetClaimsGenerator.GetPrincipal(userInfo), AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme));
         }
 
         private static Dictionary<string, string> ReadUserInfoAsDictionary(TelegramUserInfo userInfo)

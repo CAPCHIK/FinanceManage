@@ -1,104 +1,35 @@
 ﻿@inherits LayoutComponentBase
 
-@using System.Text.Json
-
-@implements IDisposable
-
 @inject Microsoft.Extensions.Configuration.IConfiguration Configuration
-@inject ILocalStorageService LocalStorage
-@inject HttpClient HttpClient
+
 <Layout Style="min-height: 100vh;">
     <Header>
         <Text style="color: white;">FinanceManage <sub>(@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value)</sub></Text>
     </Header>
     <Content>
-        @switch (LocalAuthState)
-        {
-            case AuthState.Authorizing:
-                <Row Justify="center" Style="margin-top: 100px">
-                    <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
-                        <Spin Spinning="true" Tip="Authenticating..." Size="large" />
-                    </AntDesign.Col>
-                </Row>
-                break;
-            case AuthState.NotAuthorized:
+        <AuthorizeView>
+            <Authorized>
+                @Body
+            </Authorized>
+            <NotAuthorized>
                 <Row Justify="center" Style="margin-top: 100px">
                     <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
                         <FinanceManage.Site.Client.Pages.TelegramSignInWidget />
                     </AntDesign.Col>
                 </Row>
-                break;
-            case AuthState.Authorized:
-                @Body
-                break;
-            default:
-                <p>Incorrect State</p>
-                break;
-        }
+            </NotAuthorized>
+            <Authorizing>
+                <Row Justify="center" Style="margin-top: 100px">
+                    <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
+                        <Spin Spinning="true" Tip="Authenticating..." Size="large" />
+                    </AntDesign.Col>
+                </Row>
+            </Authorizing>
+        </AuthorizeView>
     </Content>
 </Layout>
 
 @code {
-    enum AuthState
-    {
-        Authorizing,
-        NotAuthorized,
-        Authorized
-    }
-    AuthState LocalAuthState { get; set; }
+    
 
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-        var version = await LocalStorage.GetItemAsync<string>("version");
-        if (version != Configuration.GetSection("Version").Value)
-        {
-            await LocalStorage.ClearAsync();
-            await LocalStorage.SetItemAsync(nameof(version), Configuration.GetSection("Version").Value);
-        }
-        try
-        {
-            var telegramUserInfo = await LocalStorage.GetItemAsync<TelegramUserInfo>("telegramUserInfo");
-            if (telegramUserInfo == null)
-            {
-                LocalAuthState = AuthState.NotAuthorized;
-            }
-            else
-            {
-                LocalAuthState = (await TryLoginAsUser(telegramUserInfo)) ? AuthState.Authorized : AuthState.NotAuthorized;
-            }
-        }
-        catch
-        {
-            LocalAuthState = AuthState.NotAuthorized;
-        }
-
-        TelegramAuthListener.UserAuthenticated += OnUserAuth;
-    }
-
-    private async Task<bool> TryLoginAsUser(TelegramUserInfo user)
-    {
-        HttpClient.DefaultRequestHeaders.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("TelegramWidget",
-                Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize(user))));
-        var response = await HttpClient.PostAsJsonAsync("/api/auth", user);
-        if (response.StatusCode == System.Net.HttpStatusCode.OK)
-        {
-            await LocalStorage.RemoveItemAsync("telegramUserInfo");
-            await LocalStorage.SetItemAsync("telegramUserInfo", user);
-            return true;
-        }
-        return false;
-    }
-
-    private async void OnUserAuth(TelegramUserInfo user)
-    {
-        LocalAuthState = (await TryLoginAsUser(user)) ? AuthState.Authorized : AuthState.NotAuthorized;
-        StateHasChanged();
-    }
-
-    public void Dispose()
-    {
-        TelegramAuthListener.UserAuthenticated -= OnUserAuth;
-    }
 }

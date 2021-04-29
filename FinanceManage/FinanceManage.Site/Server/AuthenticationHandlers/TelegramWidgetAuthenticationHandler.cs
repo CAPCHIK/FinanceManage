@@ -33,10 +33,13 @@ namespace FinanceManage.Site.Server.AuthenticationHandlers
             this.telegramBotOptions = telegramBotOptions;
         }
 
-        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            Logger.LogInformation("try to auth");
-           
+            return Task.FromResult(HandleAuthenticateSync());
+        }
+
+        protected AuthenticateResult HandleAuthenticateSync()
+        {
             if (!Request.Headers.TryGetValue("Authorization", out var headerRow))
             {
                 return AuthenticateResult.NoResult();
@@ -49,16 +52,13 @@ namespace FinanceManage.Site.Server.AuthenticationHandlers
             {
                 return AuthenticateResult.NoResult();
             }
-            if (header.Scheme != "TelegramWidget")
-            {
-                return AuthenticateResult.NoResult();
-            }
 
             byte[] infoInBase64;
             try
             {
                 infoInBase64 = Convert.FromBase64String(header.Parameter);
-            } catch
+            }
+            catch
             {
                 return AuthenticateResult.Fail($"invalid base64 content");
             }
@@ -81,7 +81,7 @@ namespace FinanceManage.Site.Server.AuthenticationHandlers
             var userInfoAsDictionary = ReadUserInfoAsDictionary(userInfo);
 
             var authResult = loginWidget.CheckAuthorization(userInfoAsDictionary);
-            
+
             if (authResult != Authorization.Valid)
             {
                 return AuthenticateResult.Fail($"Incorrect telegram info: {authResult}");

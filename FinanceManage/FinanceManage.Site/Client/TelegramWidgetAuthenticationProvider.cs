@@ -90,7 +90,7 @@ namespace FinanceManage.Site.Client
             httpClient.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue("TelegramWidget",
                     Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(userInfoJson)));
-            var response = await httpClient.PostAsJsonAsync("/api/auth", user);
+            var response = await httpClient.PostAsync("/api/auth", null);
             if (response.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 await localStorage.RemoveItemAsync("telegramUserInfo");

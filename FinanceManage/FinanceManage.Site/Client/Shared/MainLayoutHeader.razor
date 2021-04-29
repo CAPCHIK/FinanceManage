@@ -1,0 +1,44 @@
+﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject ILogoutService LogoutService
+
+
+<div style="display: flex; justify-content:space-between;">
+
+    <Tooltip Placement="@PlacementType.Bottom" Title="@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value">
+        <Text Style="color: white;">FinanceManage</Text>
+    </Tooltip>
+    <AuthorizeView>
+        <Authorized>
+            <Dropdown>
+                <Overlay>
+                    <Menu>
+                        <MenuItem>
+                            <Button OnClick="LogoutService.Logout">Log out</Button>
+                        </MenuItem>
+                    </Menu>
+                </Overlay>
+                <ChildContent>
+                    <Text Style="color: white; cursor: pointer;">Hello <b>@context.User.Identity.Name</b></Text>
+                </ChildContent>
+            </Dropdown>
+
+        </Authorized>
+        <NotAuthorized>
+            <Row Justify="center">
+                <AntDesign.Col Span="24" Style=" display: flex; justify-content: center; align-items:center;">
+                    <TelegramSignInWidget Size="medium" />
+                </AntDesign.Col>
+            </Row>
+        </NotAuthorized>
+        <Authorizing>
+            <Row Justify="center">
+                <AntDesign.Col Span="24" Style=" display: flex; justify-content: center; align-items: center;">
+                    <Spin Spinning="true" Tip="Authenticating..." Size="medium" />
+                </AntDesign.Col>
+            </Row>
+        </Authorizing>
+    </AuthorizeView>
+</div>
+@code {
+
+}

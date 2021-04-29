@@ -1,31 +1,11 @@
 ﻿@inherits LayoutComponentBase
 
-@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
-
 <Layout Style="min-height: 100vh;">
-    <Header>
-        <Text style="color: white;">FinanceManage <sub>(@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value)</sub></Text>
+    <Header Style="padding:0 25px;">
+        <MainLayoutHeader />
     </Header>
-    <Content>
-        <AuthorizeView>
-            <Authorized>
-                @Body
-            </Authorized>
-            <NotAuthorized>
-                <Row Justify="center" Style="margin-top: 100px">
-                    <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
-                        <FinanceManage.Site.Client.Pages.TelegramSignInWidget />
-                    </AntDesign.Col>
-                </Row>
-            </NotAuthorized>
-            <Authorizing>
-                <Row Justify="center" Style="margin-top: 100px">
-                    <AntDesign.Col Span="24" Style=" display: flex; justify-content: center;">
-                        <Spin Spinning="true" Tip="Authenticating..." Size="large" />
-                    </AntDesign.Col>
-                </Row>
-            </Authorizing>
-        </AuthorizeView>
+    <Content Style="padding: 0.7em;">
+       @Body
     </Content>
 </Layout>
 

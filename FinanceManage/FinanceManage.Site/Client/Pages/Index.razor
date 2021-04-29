@@ -1,11 +1,9 @@
 ﻿@page "/"
 <Title>Finance manager site</Title>
-@inject ILogoutService LogoutService
 
 <AuthorizeView>
     <Authorized>
         <p>Hello, authorized</p>
-        <Button OnClick="LogoutService.Logout">Logout</Button>
     </Authorized>
     <NotAuthorized>
         <p>YOU ARE NOT AUTHORIZED</p>

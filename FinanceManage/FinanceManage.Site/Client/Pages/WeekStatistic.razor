@@ -58,7 +58,10 @@ else
         },
         Label = new BarViewConfigLabel
         {
-            Visible = true
+            Visible = true,
+            AdjustColor = true,
+            AdjustPosition = true,
+            Position = "right"
         }
     };
 
@@ -79,7 +82,7 @@ else
         try
         {
             var data = await Mediator.Send(new WeekSpending.Command(DateTimeOffset.UtcNow.AddDays(-7), ChatId));
-            data1 = data.ByCategory.ToList();
+            data1 = data.ByCategory.OrderByDescending(kvp => kvp.Value).ToList();
         }
         catch (Exception ex)
         {

@@ -32,7 +32,7 @@ namespace FinanceManage.CQRS.Handlers.Client
         {
             try
             {
-                var response = await httpClient.GetFromJsonAsync<Result>($"/api/weekspending?{request.ConevertToQuery()}", cancellationToken: cancellationToken);
+                var response = await httpClient.GetFromJsonAsync<Result>($"/api/weekspending?{request.ConevertToQuery<Command, Result>()}", cancellationToken: cancellationToken);
                 return response;
             }
             catch (HttpRequestException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Forbidden)

@@ -5,7 +5,6 @@
 
 @inject IMediator Mediator
 @inject HttpClient HttpClient
-
 @* Stack for feature *@
 @*<StackedArea @ref="chart4" TItem="EmissionItem" Config="config4" />*@
 
@@ -15,7 +14,9 @@
 }
 else if (ex is not null)
 {
-    <AntDesign.Text>Непредвиденная ошибка. Пожалуйста, попробуйте позже.</AntDesign.Text>
+    <Tooltip Title="@($"{ex.GetType().FullName} : {ex.Message}")" Placement="@PlacementType.Bottom">
+        <AntDesign.Text>Непредвиденная ошибка. Пожалуйста, попробуйте позже.</AntDesign.Text>
+    </Tooltip>
 }
 else if (data1 is null)
 {

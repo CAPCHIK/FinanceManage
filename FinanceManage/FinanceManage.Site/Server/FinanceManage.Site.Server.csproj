@@ -5,16 +5,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.1.1" />
+    <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.5" />
     <PackageReference Include="Telegram.Bot.Extensions.LoginWidget" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\FinanceManage.CQRS.Handlers.Server\FinanceManage.CQRS.Handlers.Server.csproj" />
     <ProjectReference Include="..\..\FinanceManage.Database\FinanceManage.Database.csproj" />
     <ProjectReference Include="..\..\Models.ServerSide\Models.ServerSide.csproj" />
     <ProjectReference Include="..\Client\FinanceManage.Site.Client.csproj" />
     <ProjectReference Include="..\Shared\FinanceManage.Site.Shared.csproj" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties appsettings_1local_1json__JsonSchema="appse" /></VisualStudio></ProjectExtensions>
 
 
 </Project>

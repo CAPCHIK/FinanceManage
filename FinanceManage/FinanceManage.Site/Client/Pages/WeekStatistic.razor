@@ -1,61 +1,140 @@
-﻿@page "/weekStatistic"
+﻿@page "/weekStatistic/{ChatId:int}"
+@attribute [Authorize]
+
 @using AntDesign.Charts
 
-
+@inject IMediator Mediator
 @inject HttpClient HttpClient
-<StackedArea @ref="chart4" TItem="EmissionItem" Config="config4" />
+
+@* Stack for feature *@
+@*<StackedArea @ref="chart4" TItem="EmissionItem" Config="config4" />*@
+
+@if (ex is ForbidException)
+{
+    <AntDesign.Text>У вас нет доступа к информации о данном канале</AntDesign.Text>
+}
+else if (ex is not null)
+{
+    <AntDesign.Text>Непредвиденная ошибка. Пожалуйста, попробуйте позже.</AntDesign.Text>
+}
+else if (data1 is null)
+{
+    <Spin Spinning="true" Tip="Загрузка данных"></Spin>
+}
+else
+{
+    <Bar Data="data1" Config="config1" @ref="barChart" />
+}
+
 
 @code{
-    class EmissionItem
-    {
-        public string Date { get; set; }
-        public double Value { get; set; }
-        public string Category { get; set; }
-    }
-    IChartComponent chart4;
+    [Parameter]
+    public int ChatId { get; set; }
 
-    protected override void OnAfterRender(bool firstRender)
-    {
-        base.OnAfterRender(firstRender);
-        if (firstRender)
-        {
-            var r = new Random(120);
-            var categories = new string[] { "cat1", "cat2", "cat3" };
-            var data4 = Enumerable.Range(1, 10).Select(d => categories.Skip(0).Select(c => new EmissionItem
-            {
-                Category = c,
-                Date = $"2021-04-{d}",
-                Value = Math.Round(r.NextDouble() * 1500, 2)
-            })).SelectMany(s => s).ToList();
-            chart4.ChangeData(data4);
-        }
-    }
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-    }
+    IChartComponent barChart;
 
-    readonly StackedAreaConfig config4 = new StackedAreaConfig
+
+
+    private Exception ex;
+
+    List<KeyValuePair<string, float>> data1;
+
+    readonly BarConfig config1 = new BarConfig
     {
         Title = new AntDesign.Charts.Title
         {
             Visible = true,
-            Text = "The causes of CO2 emissions"
+            Text = "Траты за последнюю неделю"
         },
-        XField = "date",
-        YField = "value",
-        SeriesField = "category",
-        XAxis = new ValueCatTimeAxis
+        ForceFit = true,
+        XField = "value",
+        YField = "key",
+        XAxis = new ValueAxis
         {
-            Type = "dateTime",
-            Mask = "YYYY-MM-D",
-            Visible = true,
             Label = new BaseAxisLabel
             {
-                Visible = true,
-                AutoRotate = true,
-                AutoHide = true
+                Visible = false
             }
         },
+        Label = new BarViewConfigLabel
+        {
+            Visible = true
+        }
     };
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await Load();
+            StateHasChanged();
+        }
+    }
+
+    private async Task Load()
+    {
+        try
+        {
+            var data = await Mediator.Send(new WeekSpending.Command(DateTimeOffset.UtcNow.AddDays(-7), ChatId));
+            data1 = data.ByCategory.ToList();
+        }
+        catch (Exception ex)
+        {
+            this.ex = ex;
+        }
+    }
+
+    #region StackGraphForFeature
+
+    // For feature
+
+    //class EmissionItem
+    //{
+    //    public string Date { get; set; }
+    //    public double Value { get; set; }
+    //    public string Category { get; set; }
+    //}
+    //IChartComponent chart4;
+
+    ////private void GenerateData()
+    //{
+    //    var r = new Random(120);
+    //    var categories = new string[] { "cat1", "cat2", "cat3" };
+    //    var data4 = Enumerable.Range(1, 10).Select(d => categories.Skip(0).Select(c => new EmissionItem
+    //    {
+    //        Category = c,
+    //        Date = $"2021-04-{d}",
+    //        Value = Math.Round(r.NextDouble() * 1500, 2)
+    //    })).SelectMany(s => s).ToList();
+    //    chart4.ChangeData(data4);
+    //}
+
+    //readonly StackedAreaConfig config4 = new StackedAreaConfig
+    //{
+    //    Title = new AntDesign.Charts.Title
+    //    {
+    //        Visible = true,
+    //        Text = "The causes of CO2 emissions"
+    //    },
+    //    XField = "date",
+    //    YField = "value",
+    //    SeriesField = "category",
+    //    XAxis = new ValueCatTimeAxis
+    //    {
+    //        Type = "dateTime",
+    //        Mask = "YYYY-MM-D",
+    //        Visible = true,
+    //        Label = new BaseAxisLabel
+    //        {
+    //            Visible = true,
+    //            AutoRotate = true,
+    //            AutoHide = true
+    //        }
+    //    },
+    //};
+    #endregion
+
 }

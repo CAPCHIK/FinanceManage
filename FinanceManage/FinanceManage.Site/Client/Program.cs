@@ -1,4 +1,6 @@
 using Blazored.LocalStorage;
+using FinanceManage.CQRS.Handlers.Client;
+using MediatR;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -22,6 +24,9 @@ namespace FinanceManage.Site.Client
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddAntDesign();
             builder.Services.AddBlazoredLocalStorage();
+
+            builder.Services.AddMediatR(typeof(WeekSpendingHandler).Assembly);
+
 
             builder.Services.AddScoped<AuthenticationStateProvider, TelegramWidgetAuthenticationProvider>();
             builder.Services.AddAuthorizationCore();

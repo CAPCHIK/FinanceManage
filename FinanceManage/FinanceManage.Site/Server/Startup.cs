@@ -1,7 +1,9 @@
+using FinanceManage.CQRS.Handlers.Server;
 using FinanceManage.Database;
 using FinanceManage.Models.ServerSide.Options;
 using FinanceManage.Site.Server.AuthenticationHandlers;
 using FinanceManage.Site.Shared;
+using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -32,6 +34,10 @@ namespace FinanceManage.Site.Server
 
             services.AddDbContext<FinanceManageDbContext>(options =>
                 options.UseNpgsql(Configuration.GetConnectionString("Database")));
+
+            services.AddAutoMapper(typeof(GetAverageSpendingPerDayHandler).Assembly);
+
+            services.AddMediatR(typeof(GetAverageSpendingPerDayHandler).Assembly);
 
             services.AddAuthentication(options =>
             {

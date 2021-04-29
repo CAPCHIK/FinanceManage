@@ -1,4 +1,5 @@
-﻿using FinanceManage.TelegramBot.InlineQueryModels;
+﻿using FinanceManage.CQRS.Queries;
+using FinanceManage.TelegramBot.InlineQueryModels;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;

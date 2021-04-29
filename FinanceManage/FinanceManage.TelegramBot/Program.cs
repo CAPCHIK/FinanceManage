@@ -1,3 +1,4 @@
+using FinanceManage.CQRS.Handlers.Server;
 using FinanceManage.Database;
 using FinanceManage.Models.ServerSide.Options;
 using MediatR;
@@ -42,7 +43,7 @@ namespace FinanceManage.TelegramBot
 
                     services.AddAutoMapper(typeof(Program).Assembly);
 
-                    services.AddMediatR(typeof(Program).Assembly);
+                    services.AddMediatR(typeof(Program).Assembly, typeof(GetAverageSpendingPerDayHandler).Assembly);
 
                     services.AddHostedService<Worker>();
 

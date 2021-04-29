@@ -1,9 +1,11 @@
+using FinanceManage.Database;
 using FinanceManage.Models.ServerSide.Options;
 using FinanceManage.Site.Server.AuthenticationHandlers;
 using FinanceManage.Site.Shared;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,6 +29,9 @@ namespace FinanceManage.Site.Server
             services.Configure<TelegramBotOptions>(Configuration.GetSection(nameof(TelegramBotOptions)));
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddDbContext<FinanceManageDbContext>(options =>
+                options.UseNpgsql(Configuration.GetConnectionString("Database")));
 
             services.AddAuthentication(options =>
             {

@@ -20,6 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FinanceManage.CQRS.Handlers.Server\FinanceManage.CQRS.Handlers.Server.csproj" />
+    <ProjectReference Include="..\FinanceManage.CQRS\FinanceManage.CQRS.csproj" />
     <ProjectReference Include="..\FinanceManage.Database\FinanceManage.Database.csproj" />
     <ProjectReference Include="..\Models.ServerSide\Models.ServerSide.csproj" />
   </ItemGroup>

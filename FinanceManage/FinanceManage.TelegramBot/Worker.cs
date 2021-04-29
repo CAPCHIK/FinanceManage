@@ -1,3 +1,4 @@
+using FinanceManage.CQRS.Queries;
 using FinanceManage.TelegramBot.Features;
 using FinanceManage.TelegramBot.Features.Telegram;
 using FinanceManage.TelegramBot.InlineQueryModels;

@@ -68,9 +68,11 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                     default:
                         throw new ArgumentException("incorrect category", nameof(request));
                 }
-                var siteUrl = new UriBuilder(options.Value.SiteBaseAddres);
-                siteUrl.Path = $"weekStatistic/{HttpUtility.UrlEncode(request.ChatId.ToString())}";
-                siteUrl.Query = $"weekStart={HttpUtility.UrlEncode(request.StartDay.ToString("yyyy-MM-dd"))}&category={HttpUtility.UrlEncode(request.CategoryMode.ToString())}";
+                var siteUrl = new UriBuilder(options.Value.SiteBaseAddres)
+                {
+                    Path = $"weekStatistic/{HttpUtility.UrlEncode(request.ChatId.ToString())}",
+                    Query = $"weekStart={HttpUtility.UrlEncode(request.StartDay.ToString("yyyy-MM-dd"))}&category={HttpUtility.UrlEncode(request.CategoryMode.ToString())}"
+                };
 
                 var siteGraphButton = InlineKeyboardButton.WithUrl($"Посмотреть на сайте", siteUrl.ToString());
 

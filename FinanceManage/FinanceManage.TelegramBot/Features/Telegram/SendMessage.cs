@@ -36,7 +36,7 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                                                              request.Text,
                                                              parseMode: request.ParseMode,
                                                              replyToMessageId: request.ReplyToMessageId,
-                                                             replyMarkup: request.ReplyMarkup,
+                                                             replyMarkup: request.ReplyMarkup ?? replyKeyboardMarkup,
                                                              cancellationToken: cancellationToken);
                 return default;
             }

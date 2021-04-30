@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Site.Shared",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildConfiguration", "BuildConfiguration\BuildConfiguration.csproj", "{BBD2B86D-1005-4F9B-A144-474655936924}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Models.ServerSide", "FinanceManage\Models.ServerSide\Models.ServerSide.csproj", "{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Models.ServerSide", "FinanceManage\Models.ServerSide\Models.ServerSide.csproj", "{C9AEBBEB-EFC0-47F2-BC33-BE6C9C57E6E0}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{773F6CC2-F298-40B3-B670-5C19AA4D21ED}"
 	ProjectSection(SolutionItems) = preProject
@@ -28,11 +28,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.CQRS", "FinanceManage\FinanceManage.CQRS\FinanceManage.CQRS.csproj", "{6C87477A-215E-426D-A39F-536FAB8B9B2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.CQRS", "FinanceManage\FinanceManage.CQRS\FinanceManage.CQRS.csproj", "{6C87477A-215E-426D-A39F-536FAB8B9B2C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.CQRS.Handlers.Server", "FinanceManage\FinanceManage.CQRS.Handlers.Server\FinanceManage.CQRS.Handlers.Server.csproj", "{E9C19602-2F0B-4C96-A5EE-C4F71B366A5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.CQRS.Handlers.Server", "FinanceManage\FinanceManage.CQRS.Handlers.Server\FinanceManage.CQRS.Handlers.Server.csproj", "{E9C19602-2F0B-4C96-A5EE-C4F71B366A5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.CQRS.Handlers.Client", "FinanceManage\FinanceManage.CQRS.Handlers.Client\FinanceManage.CQRS.Handlers.Client.csproj", "{6B70C1F7-5DA7-49C2-B41A-C019B2AD2134}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.CQRS.Handlers.Client", "FinanceManage\FinanceManage.CQRS.Handlers.Client\FinanceManage.CQRS.Handlers.Client.csproj", "{6B70C1F7-5DA7-49C2-B41A-C019B2AD2134}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

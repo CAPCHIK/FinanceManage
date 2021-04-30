@@ -5,8 +5,11 @@
 
 @inject IMediator Mediator
 @inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
 @* Stack for feature *@
 @*<StackedArea @ref="chart4" TItem="EmissionItem" Config="config4" />*@
+
+
 
 @if (ex is ForbidException)
 {
@@ -27,6 +30,7 @@ else
     <Bar Data="data1" Config="config1" @ref="barChart" />
 }
 
+@*<DatePicker TValue="DateTime" Picker="@DatePickerType.Date" @bind-Value="weekStart" OnChange="Load" />*@
 
 @code{
     [Parameter]
@@ -34,7 +38,8 @@ else
 
     IChartComponent barChart;
 
-
+    private DateTime weekStart;
+    private WeekSpending.CategoryMode categoryMode;
 
     private Exception ex;
 
@@ -68,21 +73,35 @@ else
 
 
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnParametersSetAsync()
     {
-        await base.OnAfterRenderAsync(firstRender);
-        if (firstRender)
-        {
-            await Load();
-            StateHasChanged();
-        }
+        await base.OnParametersSetAsync();
+        var uri = new Uri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+        var weekStartString = query.Get("weekStart");
+
+        weekStart = (DateTimeOffset.TryParseExact(weekStartString, "yyyy-MM-dd",
+            System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.AssumeUniversal, out var parsedWeekStart)
+            ? parsedWeekStart : DateTimeOffset.UtcNow.Date.AddDays(-6)).Date;
+
+        var categoryModeString = query.Get("category");
+
+
+        categoryMode = Enum.TryParse<WeekSpending.CategoryMode>(categoryModeString, out var parsedCategory)
+            ? parsedCategory : WeekSpending.CategoryMode.Compact;
+
+        await Load();
     }
 
     private async Task Load()
     {
         try
         {
-            var data = await Mediator.Send(new WeekSpending.Command(DateTimeOffset.UtcNow.AddDays(-7), ChatId));
+            data1 = default;
+            ex = default;
+            var data = await Mediator.Send(new WeekSpending.Command(weekStart, ChatId, categoryMode));
             data1 = data.ByCategory.OrderByDescending(kvp => kvp.Value).ToList();
         }
         catch (Exception ex)

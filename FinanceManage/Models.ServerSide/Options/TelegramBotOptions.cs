@@ -14,5 +14,10 @@ namespace FinanceManage.Models.ServerSide.Options
         /// </summary>
         [Required]
         public string AccessToken { get; set; }
+        /// <summary>
+        /// Site base address with schema
+        /// </summary>
+        [Required]
+        public string SiteBaseAddres { get; set; }
     }
 }

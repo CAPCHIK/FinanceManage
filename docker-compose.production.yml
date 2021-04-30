@@ -4,6 +4,7 @@ services:
     tg_bot:
         environment:
             - ConnectionStrings__Database=${POSTGRES_CONNECTION_STRING?pass postgres connection string POSTGRES_CONNECTION_STRING}
+            - TelegramBotOptions__SiteBaseAddres=${TELEGRAM_BOT_SITE_BASE_ADDRESS?pass site info base address TELEGRAM_BOT_SITE_BASE_ADDRESS}
         deploy:
             resources:
                 limits:

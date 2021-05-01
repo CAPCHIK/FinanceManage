@@ -51,12 +51,12 @@ else
                 .Select(g => (category: g.Key, count: g.Count()))
                 .ToList();
 
-            var middle = categoriesCounts.Select(cc => cc.count).Average();
 
             var categories = categoriesCounts
                 .OrderBy(cc => cc.count)
                 .Select(cc => cc.category);
 
+            var middle = categoriesCounts.Select(cc => cc.count).Average();
             config.Legend.Selected = configLine.Legend.Selected = categoriesCounts
                  .Where(cc => cc.count <= middle)
                  .ToDictionary(cc => cc.category, _ => false);
@@ -65,7 +65,7 @@ else
                 .Select(r => (date: r.Date.ToString("yyyy-MM-dd"), item: r))
                 .GroupBy(r => r.date)
                 .OrderBy(g => g.Key)
-                .Select(g => (date: g.Key, items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0]).ToDictionary(dayGroup => dayGroup.Key, dayGroup => dayGroup.Sum(dg => dg.item.Price))))
+                .Select(g => (date: g.Key, items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0]).ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
                 .Select(g => (date: g.date, items: categories.Select(c => (category: c, price: g.items.TryGetValue(c, out var price) ? price : 0))))
                 .SelectMany(g => g.items.Select(i => new GraphItem
                 {

@@ -26,7 +26,8 @@ jobs:
             service-name: fin-manage_site
     steps:
       - uses: actions/checkout@v2
-        submodules: recursive
+        with:
+          submodules: recursive
       - name: Print new build number
         run: echo "Build number is $GITHUB_RUN_NUMBER"
       - name: Setup .NET

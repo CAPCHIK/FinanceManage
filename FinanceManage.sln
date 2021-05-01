@@ -34,6 +34,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.CQRS.Handlers
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.CQRS.Handlers.Client", "FinanceManage\FinanceManage.CQRS.Handlers.Client\FinanceManage.CQRS.Handlers.Client.csproj", "{6B70C1F7-5DA7-49C2-B41A-C019B2AD2134}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntDesign.Charts", "ant-design-charts-blazor\src\AntDesign.Charts\AntDesign.Charts.csproj", "{F72ED726-4C4B-4DDC-AD96-D06B2CBA351B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,10 @@ Global
 		{6B70C1F7-5DA7-49C2-B41A-C019B2AD2134}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B70C1F7-5DA7-49C2-B41A-C019B2AD2134}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B70C1F7-5DA7-49C2-B41A-C019B2AD2134}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F72ED726-4C4B-4DDC-AD96-D06B2CBA351B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F72ED726-4C4B-4DDC-AD96-D06B2CBA351B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F72ED726-4C4B-4DDC-AD96-D06B2CBA351B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F72ED726-4C4B-4DDC-AD96-D06B2CBA351B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

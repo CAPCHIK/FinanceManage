@@ -1,4 +1,4 @@
-﻿@page "/purchases/{chatId:long}"
+﻿@page "/purchases/{ChatId:long}"
 @attribute [Authorize]
 
 @using AntDesign.Charts
@@ -21,7 +21,8 @@ else if (data is null)
 }
 else
 {
-    <StackedArea @ref="chart4" TItem="GraphItem" Config="config4" Data="data" />
+    <Area Config="config" Data="data" />
+    <Line Config="configLine" Data="data" />
 }
 
 @code {
@@ -30,17 +31,35 @@ else
     public long ChatId { get; set; }
 
     private Exception ex;
+
+    class GraphItem
+    {
+        public string Date { get; set; }
+        public double Value { get; set; }
+        public string Category { get; set; }
+    }
     private List<GraphItem> data;
-
-
-    private async Task LoadData()
+    private async Task<List<GraphItem>> LoadData()
     {
         ex = default;
         data = default;
         try
         {
             var response = await mediator.Send(new GetAllPurchases.Command(ChatId));
-            var categories = response.Select(r => r.Category.Split(' ')[0]).Distinct().ToList();
+            var categoriesCounts = response
+                .GroupBy(r => r.Category.Split(' ')[0])
+                .Select(g => (category: g.Key, count: g.Count()))
+                .ToList();
+
+            var middle = categoriesCounts.Select(cc => cc.count).Average();
+
+            var categories = categoriesCounts
+                .OrderBy(cc => cc.count)
+                .Select(cc => cc.category);
+
+            config.Legend.Selected = configLine.Legend.Selected = categoriesCounts
+                 .Where(cc => cc.count <= middle)
+                 .ToDictionary(cc => cc.category, _ => false);
 
             var result = response
                 .Select(r => (date: r.Date.ToString("yyyy-MM-dd"), item: r))
@@ -56,11 +75,12 @@ else
                 }))
                 .ToList();
 
-            data = result;
+            return result;
         }
         catch (Exception ex)
         {
             this.ex = ex;
+            return null;
         }
     }
 
@@ -69,21 +89,13 @@ else
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
-            await LoadData();
+            data = await LoadData();
             StateHasChanged();
         }
     }
 
 
-    class GraphItem
-    {
-        public string Date { get; set; }
-        public double Value { get; set; }
-        public string Category { get; set; }
-    }
-    IChartComponent chart4;
-
-    readonly StackedAreaConfig config4 = new StackedAreaConfig
+    AreaConfig config = new AreaConfig
     {
         Title = new AntDesign.Charts.Title
         {
@@ -95,7 +107,7 @@ else
         SeriesField = "category",
         XAxis = new ValueCatTimeAxis
         {
-            Type = "dateTime",
+            Type = "time",
             Mask = "YYYY-MM-D",
             Visible = true,
             Label = new BaseAxisLabel
@@ -105,17 +117,46 @@ else
                 AutoHide = true
             }
         },
-        Interactions = new Interaction[]
+        Legend = new Legend
         {
-            new Interaction
+        },
+        Responsive = true,
+        //Slider = new AreaConfig.SliderCfg
+        //{
+        //    Start = 0.3f,
+        //    End = 0.8f
+        //},
+    };
+    LineConfig configLine = new LineConfig
+    {
+        Title = new AntDesign.Charts.Title
+        {
+            Visible = true,
+            Text = "Покупки за все время"
+        },
+        XField = "date",
+        YField = "value",
+        SeriesField = "category",
+        XAxis = new ValueCatTimeAxis
+        {
+            Type = "time",
+            Mask = "YYYY-MM-D",
+            Visible = true,
+            Label = new BaseAxisLabel
             {
-                Type="slider",
-                Cfg = new
-                {
-                    start = 0,
-                    end = 1,
-                }
+                Visible = true,
+                AutoRotate = true,
+                AutoHide = true
             }
-        }
+        },
+        Legend = new Legend
+        {
+        },
+        Responsive = true,
+        //Slider = new AreaConfig.SliderCfg
+        //{
+        //    Start = 0.3f,
+        //    End = 0.8f
+        //},
     };
 }

@@ -1,0 +1,3 @@
+[submodule "ant-design-charts-blazor"]
+	path = ant-design-charts-blazor
+	url = https://github.com/ant-design-blazor/ant-design-charts-blazor.git

@@ -1,0 +1,11 @@
+﻿@page "/purchases/{ChatId:long}/edit/{PageNum:int}"
+@page "/purchases/{ChatId:long}/edit"
+
+<h3>PurchasesEdit</h3>
+
+@code {
+    [Parameter]
+    public long ChatId { get; set; }
+    [Parameter]
+    public int PageNum { get; set; }
+}

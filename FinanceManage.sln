@@ -36,7 +36,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.CQRS.Handlers
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntDesign.Charts", "ant-design-charts-blazor\src\AntDesign.Charts\AntDesign.Charts.csproj", "{F72ED726-4C4B-4DDC-AD96-D06B2CBA351B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinanceManage.Telegram.Shared", "FinanceManage\FinanceManage.Telegram.Shared\FinanceManage.Telegram.Shared.csproj", "{8D2DDB54-92AA-4F1E-A9F1-92620BF2A87C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Telegram.Shared", "FinanceManage\FinanceManage.Telegram.Shared\FinanceManage.Telegram.Shared.csproj", "{8D2DDB54-92AA-4F1E-A9F1-92620BF2A87C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

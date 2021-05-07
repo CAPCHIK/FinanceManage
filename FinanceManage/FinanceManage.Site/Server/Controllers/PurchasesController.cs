@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using static FinanceManage.CQRS.Queries.GetAllPurchases;
+using static FinanceManage.CQRS.Queries.GetPurchases;
 
 namespace FinanceManage.Site.Server.Controllers
 {
@@ -24,7 +24,9 @@ namespace FinanceManage.Site.Server.Controllers
 
         [Authorize]
         [HttpGet("{chatId:long}")]
-        public async Task<ActionResult<List<Response>>> Get(long chatId)
+        public async Task<ActionResult<ListWrapper<Response>>> Get(
+            [FromRoute] long chatId,
+            [FromQuery] Command command)
         {
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), chatId));
@@ -34,7 +36,7 @@ namespace FinanceManage.Site.Server.Controllers
                 return Forbid();
             }
 
-            return await mediator.Send(new Command(chatId));
+            return await mediator.Send(command with { ChatId = chatId });
         }
     }
 }

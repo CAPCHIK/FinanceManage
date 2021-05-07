@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace FinanceManage.CQRS.Queries
 {
-    public class GetAllPurchases
+    public class GetPurchases
     {
         public record Response(Guid Id, int BuyerTelegramId, string Category, float Price, DateTimeOffset Date);
-        public record Command(long ChatId) : IRequest<List<Response>>;
+        public record Command(long ChatId, int PageNum = 0, int PageSize = 10) : IRequest<ListWrapper<Response>>;
     }
 }

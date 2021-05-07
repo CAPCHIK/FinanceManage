@@ -4,7 +4,10 @@
 @using AntDesign.Charts
 
 @inject IMediator mediator
-
+@if (loadingProgress < 100)
+{
+    <AntDesign.Progress Status="@(ex is null ? ProgressStatus.Active : ProgressStatus.Exception)" Percent="loadingProgress" />
+}
 @if (ex is ForbidException)
 {
     <AntDesign.Text>У вас нет доступа к информации о данном канале</AntDesign.Text>
@@ -15,17 +18,20 @@ else if (ex is not null)
         <AntDesign.Text>Непредвиденная ошибка. Пожалуйста, попробуйте позже.</AntDesign.Text>
     </Tooltip>
 }
-else if (data is null)
+@if (data is null)
 {
     <Spin Spinning="true" Tip="Загрузка данных"></Spin>
 }
 else
 {
-    <Area Config="config" Data="data" />
-    <Line Config="configLine" Data="data" />
+    <Area Config="config" @ref="areaChart" OnFirstRender="c => c.ChangeData(data)" />
+    <Line Config="configLine" @ref="lineChart" OnFirstRender="c => c.ChangeData(data)" />
 }
 
 @code {
+
+    IChartComponent areaChart;
+    IChartComponent lineChart;
 
     [Parameter]
     public long ChatId { get; set; }
@@ -38,50 +44,98 @@ else
         public double Value { get; set; }
         public string Category { get; set; }
     }
+
     private List<GraphItem> data;
-    private async Task<List<GraphItem>> LoadData()
+
+    private double loadingProgress = 0;
+
+    private async Task LoadData()
     {
         ex = default;
         data = default;
+        int total = int.MaxValue;
+        int loaded = 0;
+        int pageSize = 10;
+        int pageNum = 0;
+        var purchases = new List<GetPurchases.Response>();
+        var updatePeriod = TimeSpan.FromSeconds(1.5);
+        var lastUpdate = DateTimeOffset.MinValue;
         try
         {
-            var response = await mediator.Send(new GetAllPurchases.Command(ChatId));
-            var categoriesCounts = response
-                .GroupBy(r => r.Category.Split(' ')[0])
-                .Select(g => (category: g.Key, count: g.Count()))
-                .ToList();
+            while (loaded < total)
+            {
+                var response = await mediator.Send(new GetPurchases.Command(ChatId, pageNum, pageSize));
+                total = response.Total;
+                loaded += response.Items.Count;
+                pageNum++;
+                purchases.AddRange(response.Items);
 
-
-            var categories = categoriesCounts
-                .OrderBy(cc => cc.count)
-                .Select(cc => cc.category);
-
-            var middle = categoriesCounts.Select(cc => cc.count).Average();
-            config.Legend.Selected = configLine.Legend.Selected = categoriesCounts
-                 .Where(cc => cc.count <= middle)
-                 .ToDictionary(cc => cc.category, _ => false);
-
-            var result = response
-                .Select(r => (date: r.Date.ToString("yyyy-MM-dd"), item: r))
-                .GroupBy(r => r.date)
-                .OrderBy(g => g.Key)
-                .Select(g => (date: g.Key, items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0]).ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
-                .Select(g => (date: g.date, items: categories.Select(c => (category: c, price: g.items.TryGetValue(c, out var price) ? price : 0))))
-                .SelectMany(g => g.items.Select(i => new GraphItem
+                var (chartData, chartSelected) = GetItemsFromResponse(purchases);
+                data = chartData;
+                config.Legend.Selected = configLine.Legend.Selected = chartSelected;
+                if (DateTimeOffset.UtcNow - lastUpdate > updatePeriod)
                 {
-                    Date = g.date,
-                    Category = i.category,
-                    Value = i.price
-                }))
-                .ToList();
+                    await UpdateCharts();
+                    lastUpdate = DateTimeOffset.UtcNow;
+                }
 
-            return result;
+                loadingProgress = Math.Round(loaded / (double)total * 100);
+                StateHasChanged();
+            }
+            await UpdateCharts();
         }
         catch (Exception ex)
         {
             this.ex = ex;
-            return null;
+            StateHasChanged();
         }
+    }
+
+    private async Task UpdateCharts()
+    {
+        if (areaChart != null)
+        {
+            await areaChart.ChangeData(data);
+            await areaChart.UpdateConfig(config);
+        }
+        if (lineChart != null)
+        {
+            await lineChart.ChangeData(data);
+            await lineChart.UpdateConfig(configLine);
+        }
+    }
+
+    private (List<GraphItem> items, Dictionary<string, bool> selected) GetItemsFromResponse(List<GetPurchases.Response> items)
+    {
+        var categoriesCounts = items
+                    .GroupBy(r => r.Category.Split(' ')[0])
+                    .Select(g => (category: g.Key, count: g.Count()))
+                    .ToList();
+
+        var categories = categoriesCounts
+            .OrderBy(cc => cc.count)
+            .Select(cc => cc.category);
+
+
+        var result = items
+            .Select(r => (date: r.Date.ToString("yyyy-MM-dd"), item: r))
+            .GroupBy(r => r.date)
+            .Select(g => (date: g.Key, items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0]).ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
+            .Select(g => (date: g.date, items: categories.Select(c => (category: c, price: g.items.TryGetValue(c, out var price) ? price : 0))))
+            .SelectMany(g => g.items.Select(i => new GraphItem
+            {
+                Date = g.date,
+                Category = i.category,
+                Value = i.price
+            }))
+            .ToList();
+
+
+        var middle = categoriesCounts.Select(cc => cc.count).Average();
+        var selected = categoriesCounts
+             .Where(cc => cc.count <= middle)
+             .ToDictionary(cc => cc.category, _ => false);
+        return (result, selected);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -89,8 +143,7 @@ else
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
-            data = await LoadData();
-            StateHasChanged();
+            await LoadData();
         }
     }
 

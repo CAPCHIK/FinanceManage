@@ -20,7 +20,75 @@
 </head>
 
 <body>
-    <div id="app">Loading...</div>
+    <div id="app">
+        <div class="loadingPanel">
+            <span class="loadingIcon">
+                <i class="loadingIconItem"></i>
+                <i class="loadingIconItem"></i>
+                <i class="loadingIconItem"></i>
+                <i class="loadingIconItem"></i>
+            </span>
+        </div>
+    </div>
+    <style>
+        .loadingPanel {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loadingIcon {
+            text-align: center;
+            position: relative;
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            transform: rotate(45deg);
+            animation: antRotate 1.2s infinite linear;
+            font-size: 32px;
+        }
+
+        .loadingIconItem {
+            text-align: center;
+            color: #1890ff;
+            font-size: 32px;
+            box-sizing: border-box;
+            position: absolute;
+            display: block;
+            transform: scale(.75);
+            transform-origin: 50% 50%;
+            opacity: .3;
+            animation: antSpinMove 1s infinite linear alternate;
+            background-color: #1890ff;
+            border-radius: 100%;
+            width: 14px;
+            height: 14px;
+        }
+
+            .loadingIconItem:nth-child(1) {
+                top: 0;
+                left: 0
+            }
+
+            .loadingIconItem:nth-child(2) {
+                top: 0;
+                right: 0;
+                animation-delay: .4s
+            }
+
+            .loadingIconItem:nth-child(3) {
+                right: 0;
+                bottom: 0;
+                animation-delay: .8s
+            }
+
+            .loadingIconItem:nth-child(4) {
+                bottom: 0;
+                left: 0;
+                animation-delay: 1.2s
+            }
+    </style>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.

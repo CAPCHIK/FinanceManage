@@ -11,5 +11,6 @@ namespace FinanceManage.Database
 
         }
         public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<TelegramChatInfoCache> TelegramChatInfoCache { get; set; }
     }
 }

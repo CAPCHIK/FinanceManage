@@ -1,5 +1,4 @@
-﻿@page "/"
-@inject IMediator Mediator
+﻿@inject IMediator Mediator
 
 <Title>Список чатов</Title>
 
@@ -8,6 +7,14 @@
         <ListItem>
             <p>@item.ChatName</p>
             <Space>
+                <SpaceItem>
+                    <NavLink href="@($"purchases/{item.ChatId}/edit")">
+                        <Button Size="large" Style="display: flex; align-items: center;">
+                            <Icon Type="edit" Theme="outline" />
+                            Edit
+                        </Button>
+                    </NavLink>
+                </SpaceItem>
                 <SpaceItem>
                     <NavLink href="@($"purchases/{item.ChatId}")">
                         <Button Size="large" Style="display: flex; align-items: center;">

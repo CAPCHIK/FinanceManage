@@ -1,0 +1,16 @@
+﻿@page "/"
+
+<AuthorizeView>
+    <Authorized>
+        <ChatsList />
+    </Authorized>
+    <NotAuthorized>
+        <LandingContent />
+    </NotAuthorized>
+    <Authorizing>
+        <Spin Tip="Loading..."/>
+    </Authorizing>
+</AuthorizeView>
+
+@code {
+}

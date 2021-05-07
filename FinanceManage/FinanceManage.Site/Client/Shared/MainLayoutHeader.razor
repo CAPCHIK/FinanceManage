@@ -5,7 +5,9 @@
 <div style="display: flex; justify-content:space-between;">
 
     <Tooltip Placement="@PlacementType.Bottom" Title="@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value">
-        <Text Style="color: white;">FinanceManage</Text>
+        <NavLink href="">
+            <Text Style="color: white;">FinanceManage</Text>
+        </NavLink>
     </Tooltip>
     <AuthorizeView>
         <Authorized>

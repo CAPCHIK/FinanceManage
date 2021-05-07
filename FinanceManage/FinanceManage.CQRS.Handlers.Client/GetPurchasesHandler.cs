@@ -1,5 +1,4 @@
-﻿using FinanceManage.CQRS.Handlers.Client;
-using FinanceManage.CQRS.Handlers.Client.Exceptions;
+﻿using FinanceManage.CQRS.Handlers.Client.Exceptions;
 using FinanceManage.CQRS.Queries;
 using MediatR;
 using System;
@@ -12,10 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using static FinanceManage.CQRS.Queries.GetPurchases;
 
-namespace FinanceManage.CQRS.Handlers.Server
+namespace FinanceManage.CQRS.Handlers.Client
 {
-
-
     public class GetPurchasesHandler : IRequestHandler<Command, ListWrapper<Response>>
     {
         private readonly HttpClient httpClient;

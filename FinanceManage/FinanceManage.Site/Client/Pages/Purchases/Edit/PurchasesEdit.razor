@@ -1,0 +1,80 @@
+﻿@page "/purchases/{ChatId:long}/edit/{PageIndex:int}/{PageSize:int}"
+@page "/purchases/{ChatId:long}/edit/{PageIndex:int}"
+@page "/purchases/{ChatId:long}/edit"
+
+@inject IMediator Mediator
+@inject NavigationManager NavigationManager
+
+
+<Table Title="Редактирование истории покупок"
+       DataSource="Purchases"
+       Loading="data == null"
+       Total="data?.Total ?? 0"
+       PageSize="PageSize"
+       PageIndex="PageIndex"
+       PageSizeChanged="PageSizeChanged"
+       PageIndexChanged="PageIndexChanged">
+    <Column Field="context.Date" Title="Дата"/>
+    <Column Field="context.Category" Title="Категория">
+        <CategoryRender Category="@context.Category"/>
+    </Column>
+    <Column Field="context.Price" Title="Цена"/>
+    <ActionColumn>
+        <Button Size="large" Style="display: flex; align-items: center;" OnClick="() => editModal.Show(context, LoadData)">
+            <Icon Type="edit" Theme="outline" />
+        </Button>
+    </ActionColumn>
+</Table>
+<EditOnePurchaseModal @ref="editModal"/>
+
+@code {
+    [Parameter]
+    public long ChatId { get; set; }
+    [Parameter]
+    public int PageIndex { get; set; }
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+
+    private List<GetPurchases.Response> Purchases => data?.Items ?? new List<GetPurchases.Response>();
+    private ListWrapper<GetPurchases.Response> data;
+
+    private EditOnePurchaseModal editModal;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (PageIndex < 0)
+        {
+            NavigationManager.NavigateTo($"/purchases/{ChatId}/edit");
+            return;
+        }
+        if (PageIndex < 1)
+        {
+            NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{PageIndex = 1}");
+            return;
+        }
+        if (PageSize < 10)
+        {
+            NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{PageIndex}/{PageSize = 10}");
+            return;
+        }
+        await LoadData();
+    }
+
+    private void PageSizeChanged(int newPageSize)
+    {
+        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{PageIndex}/{newPageSize}");
+    }
+    private void PageIndexChanged(int newPageNum)
+    {
+        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{newPageNum}/{PageSize}");
+    }
+
+    private async Task LoadData()
+    {
+        data = null;
+        StateHasChanged();
+        data = await Mediator.Send(new GetPurchases.Command(ChatId, PageIndex - 1, PageSize));
+        StateHasChanged();
+    }
+}

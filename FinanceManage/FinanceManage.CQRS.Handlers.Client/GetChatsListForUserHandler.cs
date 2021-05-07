@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 using static FinanceManage.CQRS.Queries.GetChatsListForUser;
 
-namespace FinanceManage.CQRS.Handlers.Server
+namespace FinanceManage.CQRS.Handlers.Client
 {
     public class GetChatsListForUserHandler : IRequestHandler<Command, List<Response>>
     {

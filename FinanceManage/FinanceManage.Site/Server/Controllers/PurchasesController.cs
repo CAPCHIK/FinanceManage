@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using static FinanceManage.CQRS.Queries.GetPurchases;
 
 namespace FinanceManage.Site.Server.Controllers
 {
@@ -24,9 +23,9 @@ namespace FinanceManage.Site.Server.Controllers
 
         [Authorize]
         [HttpGet("{chatId:long}")]
-        public async Task<ActionResult<ListWrapper<Response>>> Get(
+        public async Task<ActionResult<ListWrapper<GetPurchases.Response>>> Get(
             [FromRoute] long chatId,
-            [FromQuery] Command command)
+            [FromQuery] GetPurchases.Command command)
         {
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), chatId));
@@ -37,6 +36,22 @@ namespace FinanceManage.Site.Server.Controllers
             }
 
             return await mediator.Send(command with { ChatId = chatId });
+        }
+        [Authorize]
+        [HttpPut("{purchaseId:guid}")]
+        public async Task<ActionResult<bool>> Get(
+            [FromRoute] Guid purchaseId,
+            [FromBody] UpdatePurchase.Command command)
+        {
+            var userHasAccess = await mediator.Send(
+               new GetUserHasAccessToPurchase.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), purchaseId));
+
+            if (!userHasAccess)
+            {
+                return Forbid();
+            }
+
+            return await mediator.Send(command with { PurchaseId = purchaseId });
         }
     }
 }

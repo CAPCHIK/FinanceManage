@@ -1,0 +1,95 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+@inject IMediator Mediator
+
+@{
+    RenderFragment footer =
+    @<Space>
+        <SpaceItem><Button Type="@ButtonType.Primary" Disabled="saving" OnClick="() => visible=false">Отмена</Button></SpaceItem>
+    </Space>;
+}
+
+<Modal Visible="visible"
+       Closable="false"
+       Footer="footer">
+    @if (purchase != null)
+    {
+        <Spin Spinning="saving" Tip="Сохранение" Size="large">
+            <Form Model="model"
+                  OnFinish="SavePurchase"
+                  LabelColSpan="8"
+                  WrapperColSpan="16">
+                <FormItem Label="Дата">
+                    <Space>
+                        <SpaceItem>
+                            <DatePicker ShowTime="true" @bind-Value="context.Date" />
+                        </SpaceItem>
+                        <SpaceItem>
+                            <Text>@purchase.Date.ToString("zzz")</Text>
+                        </SpaceItem>
+                    </Space>
+                </FormItem>
+                <FormItem Label="Категория">
+                    <AntDesign.Input @bind-Value="context.Category" />
+                </FormItem>
+                <FormItem Label="Цена">
+                    <AntDesign.InputNumber @bind-Value="context.Price" />
+                </FormItem>
+                <FormItem WrapperColOffset="8" WrapperColSpan="16">
+                    <Button HtmlType="submit">
+                        Сохранить
+                    </Button>
+                </FormItem>
+            </Form>
+        </Spin>
+    }
+</Modal>
+@code {
+
+    private bool visible = false;
+    private bool saving = false;
+    private GetPurchases.Response purchase;
+    private PurchaseEditModel model;
+    private Func<Task> onUpdate;
+    public void Show(GetPurchases.Response purchase, Func<Task> onUpdate)
+    {
+        this.purchase = purchase;
+        model = new PurchaseEditModel
+        {
+            Date = purchase.Date.DateTime,
+            Category = purchase.Category,
+            Price = purchase.Price
+        };
+        this.onUpdate = onUpdate;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private async Task SavePurchase()
+    {
+        saving = true;
+        StateHasChanged();
+
+        var success = await Mediator.Send(new UpdatePurchase.Command(
+            purchase.Id,
+            model.Category.Trim(),
+            (float)Math.Round(model.Price, 2),
+            new DateTimeOffset(model.Date, purchase.Date.Offset)));
+        await onUpdate();
+
+        saving = false;
+        visible = false;
+        StateHasChanged();
+    }
+
+    class PurchaseEditModel
+    {
+        [Required]
+        public DateTime Date { get; set; }
+        [Required]
+        public string Category { get; set; }
+        [Required]
+        [Range(0.001, float.MaxValue)]
+        public float Price { get; set; }
+    }
+}

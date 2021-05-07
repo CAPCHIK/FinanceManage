@@ -1,0 +1,27 @@
+﻿<Text><strong>@firstWord</strong><em>@another</em></Text>
+@code {
+    [Parameter]
+    public string Category { get; set; }
+
+    private string firstWord;
+    private string another;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        if (string.IsNullOrEmpty(Category))
+        {
+            return;
+        }
+        var spacePosition = Category.IndexOf(' ');
+        if (spacePosition != -1)
+        {
+            firstWord = Category.Substring(0, spacePosition);
+            another = Category.Substring(spacePosition);
+        }
+        else
+        {
+            firstWord = Category;
+        }
+    }
+}

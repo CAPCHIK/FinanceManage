@@ -1,14 +1,28 @@
 ﻿@page "/"
-<Title>Finance manager site</Title>
+@inject IMediator Mediator
 
-<AuthorizeView>
-    <Authorized>
-        <p>Hello, authorized</p>
-    </Authorized>
-    <NotAuthorized>
-        <p>YOU ARE NOT AUTHORIZED</p>
-    </NotAuthorized>
-    <Authorizing>
-        <p>Please, wait...</p>
-    </Authorizing>
-</AuthorizeView>
+<Title>Список чатов</Title>
+
+<AntList DataSource="chats">
+    <ChildContent Context="item">
+        <ListItem>
+            <p>@item.ChatName</p>
+            <p>@item.ChatId</p>
+        </ListItem>
+    </ChildContent>
+</AntList>
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationStateTask { get; set; }
+
+
+    private List<GetChatsListForUser.Response> chats;
+
+    protected async override Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        var state = await authenticationStateTask;
+        chats = await Mediator.Send(new GetChatsListForUser.Command(0));
+    }
+}

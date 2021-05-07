@@ -16,7 +16,7 @@ namespace FinanceManage.TelegramBot.Features
             string Category,
             float Price,
             DateTimeOffset Date,
-            long TelegramChannelId) : IRequest<bool>;
+            long TelegramChatId) : IRequest<bool>;
 
         public class CommandMapping : Profile
         {

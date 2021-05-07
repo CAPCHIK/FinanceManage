@@ -3,6 +3,7 @@ using FinanceManage.Database;
 using FinanceManage.Models.ServerSide.Options;
 using FinanceManage.Site.Server.AuthenticationHandlers;
 using FinanceManage.Site.Shared;
+using FinanceManage.Telegram.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -38,6 +39,8 @@ namespace FinanceManage.Site.Server
             services.AddAutoMapper(typeof(GetAverageSpendingPerDayHandler).Assembly);
 
             services.AddMediatR(typeof(GetAverageSpendingPerDayHandler).Assembly);
+
+            services.AddTelegramBotClient();
 
             services.AddAuthentication(options =>
             {

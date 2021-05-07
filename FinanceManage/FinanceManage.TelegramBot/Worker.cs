@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Args;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -57,10 +58,11 @@ namespace FinanceManage.TelegramBot
             return Task.CompletedTask; // TODO save tasks and waiting
         }
 
-        private async void TelegramClient_OnMessage(object sender, Telegram.Bot.Args.MessageEventArgs args)
+        private async void TelegramClient_OnMessage(object sender, MessageEventArgs args)
         {
             using var scope = serviceScopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+            logger.LogDebug($"chat info: {new { args.Message.Chat.Title, args.Message.Chat.FirstName, args.Message.Chat.LastName }}");
             try
             {
                 await HandleMessage(mediator, args.Message);
@@ -71,7 +73,7 @@ namespace FinanceManage.TelegramBot
             }
         }
 
-        private async void TelegramClient_OnCallbackQuery(object sender, Telegram.Bot.Args.CallbackQueryEventArgs e)
+        private async void TelegramClient_OnCallbackQuery(object sender, CallbackQueryEventArgs e)
         {
             using var scope = serviceScopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
@@ -120,6 +122,7 @@ namespace FinanceManage.TelegramBot
                 await mediator.Send(new SendMessage.Command(message.Chat.Id, errorMessage.EscapeAsMarkdownV2(), message.MessageId, ParseMode.MarkdownV2));
                 return;
             }
+            logger.LogDebug($"saving purchase {command}");
             var saveResult = await mediator.Send(command);
             if (saveResult)
             {
@@ -150,7 +153,8 @@ namespace FinanceManage.TelegramBot
             if (words.Length > 1)
             {
                 builder.AppendLine($" _{string.Join(' ', words.Skip(1)).EscapeAsMarkdownV2()}_");
-            } else
+            }
+            else
             {
                 builder.AppendLine();
             }
@@ -160,7 +164,8 @@ namespace FinanceManage.TelegramBot
             builder.AppendLine();
             builder.AppendLine(@$"{Emoji.BarChart} сегодня / среднее / %");
             var averajeEmoji = today > averageMonth ? Emoji.ChartWithDownwardsTrend : Emoji.ChartWithUpwardsTrend;
-            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()}₽ / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()}₽ / {(int)(today / averageMonth * 100)}%");
+            var percents = averageMonth == 0 ? "∞" : ((int)(today / averageMonth * 100)).ToString().EscapeAsMarkdownV2();
+            builder.AppendLine(@$"{averajeEmoji} {today.ToMoneyString().EscapeAsMarkdownV2()}₽ / {averageMonth.ToMoneyString().EscapeAsMarkdownV2()}₽ / {percents}%");
 
             return builder.ToString();
         }

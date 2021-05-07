@@ -3,11 +3,29 @@
 
 <Title>Список чатов</Title>
 
-<AntList DataSource="chats">
+<AntList Bordered DataSource="chats" Loading="@(chats == null)">
     <ChildContent Context="item">
         <ListItem>
             <p>@item.ChatName</p>
-            <p>@item.ChatId</p>
+            <Space>
+                <SpaceItem>
+                    <NavLink href="@($"purchases/{item.ChatId}")">
+                        <Button Size="large" Style="display: flex; align-items: center;">
+                            <Icon Type="area-chart" Theme="outline" />
+                            Total
+                        </Button>
+                    </NavLink>
+                </SpaceItem>
+
+                <SpaceItem>
+                    <NavLink href="@($"weekStatistic/{item.ChatId}?&category=Compact")">
+                        <Button Size="large" Style="display: flex; align-items: center;">
+                            <Icon Type="bar-chart" Theme="outline" />
+                            Per Week
+                        </Button>
+                    </NavLink>
+                </SpaceItem>
+            </Space>
         </ListItem>
     </ChildContent>
 </AntList>

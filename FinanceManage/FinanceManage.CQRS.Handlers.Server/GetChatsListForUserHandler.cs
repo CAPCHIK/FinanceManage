@@ -31,13 +31,23 @@ namespace FinanceManage.CQRS.Handlers.Server
         }
         public async Task<List<GetChatsListForUser.Response>> Handle(GetChatsListForUser.Command request, CancellationToken cancellationToken)
         {
-            var fromDb = await dbContext
+            var ids = await dbContext
                 .Purchases
                 .Where(p => p.BuyerTelegramId == request.UserId)
                 .GroupBy(p => p.TelegramChatId)
-                .Select(p => new GetChatsListForUser.Response(p.Key, "no chat name"))
+                .Select(p => p.Key)
                 .ToListAsync(cancellationToken: cancellationToken);
-            return fromDb;
+
+            var names = (await dbContext.TelegramChatInfoCache
+                .Where(c => ids.Contains(c.Id))
+                .ToListAsync(cancellationToken: cancellationToken)).ToDictionary(c => c.Id, c => c.Title);
+
+            var result = ids.Select(id => new GetChatsListForUser.Response(
+                id,
+                names.TryGetValue(id, out var title) ? title : "no title"))
+                .ToList();
+
+            return result;
         }
     }
 }

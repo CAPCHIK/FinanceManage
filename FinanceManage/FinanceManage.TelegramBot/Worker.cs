@@ -1,3 +1,4 @@
+using FinanceManage.CQRS.Notifications;
 using FinanceManage.CQRS.Queries;
 using FinanceManage.TelegramBot.Features;
 using FinanceManage.TelegramBot.Features.Telegram;
@@ -62,7 +63,11 @@ namespace FinanceManage.TelegramBot
         {
             using var scope = serviceScopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-            logger.LogDebug($"chat info: {new { args.Message.Chat.Title, args.Message.Chat.FirstName, args.Message.Chat.LastName }}");
+            await mediator.Publish(new UpdateTelegramChatTitle(
+                args.Message.Chat.Id,
+                args.Message.Chat.FirstName,
+                args.Message.Chat.LastName,
+                args.Message.Chat.Title));
             try
             {
                 await HandleMessage(mediator, args.Message);

@@ -3,15 +3,17 @@ using System;
 using FinanceManage.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace FinanceManage.Database.Migrations
 {
     [DbContext(typeof(FinanceManageDbContext))]
-    partial class FinanceManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210507095024_AddTelegramInfoCache")]
+    partial class AddTelegramInfoCache
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -51,9 +53,6 @@ namespace FinanceManage.Database.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint")
                         .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
-
-                    b.Property<DateTimeOffset>("CachedDate")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Title")
                         .HasColumnType("text");

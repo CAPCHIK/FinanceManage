@@ -1,7 +1,7 @@
 ﻿@page "/purchases/{ChatId:long}/edit/{PageIndex:int}/{PageSize:int}"
 @page "/purchases/{ChatId:long}/edit/{PageIndex:int}"
 @page "/purchases/{ChatId:long}/edit"
-
+@attribute [Authorize]
 @inject IMediator Mediator
 @inject NavigationManager NavigationManager
 
@@ -14,18 +14,18 @@
        PageIndex="PageIndex"
        PageSizeChanged="PageSizeChanged"
        PageIndexChanged="PageIndexChanged">
-    <Column Field="context.Date" Title="Дата"/>
+    <Column Field="context.Date" Title="Дата" />
     <Column Field="context.Category" Title="Категория">
-        <CategoryRender Category="@context.Category"/>
+        <CategoryRender Category="@context.Category" />
     </Column>
-    <Column Field="context.Price" Title="Цена"/>
+    <Column Field="context.Price" Title="Цена" />
     <ActionColumn>
         <Button Size="large" Style="display: flex; align-items: center;" OnClick="() => editModal.Show(context, LoadData)">
             <Icon Type="edit" Theme="outline" />
         </Button>
     </ActionColumn>
 </Table>
-<EditOnePurchaseModal @ref="editModal"/>
+<EditOnePurchaseModal @ref="editModal" />
 
 @code {
     [Parameter]

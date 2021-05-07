@@ -33,7 +33,7 @@ namespace FinanceManage.CQRS.Handlers.Server
             var dateEnd = request.WeekStart.AddDays(7);
 
             var response = await dbContext.Purchases
-                .Where(p => p.TelegramChannelId == request.ChannelId
+                .Where(p => p.TelegramChatId == request.ChatId
                          && p.Date >= dateStart
                          && p.Date <= dateEnd)
                 .GroupBy(p => p.Category)

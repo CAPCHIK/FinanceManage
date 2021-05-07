@@ -29,7 +29,7 @@ namespace FinanceManage.CQRS.Handlers.Server
             var daysCount = end - dayStart;
             logger.LogDebug($"start: {dayStart} end: {end} days count: {daysCount.Days}");
             var fromDb = await dbContext.Purchases
-                .Where(p => p.TelegramChannelId == request.ChannelId)
+                .Where(p => p.TelegramChatId == request.ChatId)
                 .Where(p => p.Date >= dayStart)
                 .Where(p => p.Date < end)
                 .Select(p => new { p.Date, p.Price })

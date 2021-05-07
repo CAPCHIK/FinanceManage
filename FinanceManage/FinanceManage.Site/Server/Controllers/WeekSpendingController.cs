@@ -30,7 +30,7 @@ namespace FinanceManage.Site.Server.Controllers
         public async Task<ActionResult<WeekSpending.Result>> GetWeekSpendingAsync([FromQuery] WeekSpending.Command command)
         {
             var userHasAccess = await mediator.Send(
-                new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), command.ChannelId));
+                new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), command.ChatId));
             if (!userHasAccess)
             {
                 return Forbid();

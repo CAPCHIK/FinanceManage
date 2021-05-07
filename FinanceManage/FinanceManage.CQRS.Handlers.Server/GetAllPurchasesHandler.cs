@@ -34,7 +34,7 @@ namespace FinanceManage.CQRS.Handlers.Server
         public Task<List<Response>> Handle(Command request, CancellationToken cancellationToken)
         {
             return dbContext.Purchases
-                .Where(p => p.TelegramChannelId == request.ChatId)
+                .Where(p => p.TelegramChatId == request.ChatId)
                 .ProjectTo<Response>(mapper.ConfigurationProvider)
                 .ToListAsync(cancellationToken: cancellationToken);
         }

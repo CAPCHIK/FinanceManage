@@ -10,6 +10,6 @@ namespace FinanceManage.CQRS.Queries
 {
     public class GetAverageSpendingPerDay
     {
-        public record Command(long ChannelId, DateTimeOffset DayStart, TimeSpan period) : IRequest<float>;
+        public record Command(long ChatId, DateTimeOffset DayStart, TimeSpan period) : IRequest<float>;
     }
 }

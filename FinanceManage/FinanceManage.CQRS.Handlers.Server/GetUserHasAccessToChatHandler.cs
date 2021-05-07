@@ -24,7 +24,7 @@ namespace FinanceManage.CQRS.Handlers.Server
         {
             return dbContext.Purchases
                 .Where(p => p.BuyerTelegramId == request.UserId)
-                .Where(p => p.TelegramChannelId == request.ChatId)
+                .Where(p => p.TelegramChatId == request.ChatId)
                 .AnyAsync(cancellationToken: cancellationToken);
         }
     }

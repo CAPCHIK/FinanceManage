@@ -4,6 +4,7 @@
 @using AntDesign.Charts
 
 @inject IMediator mediator
+@inject IJSRuntime JS
 @if (loadingProgress < 100)
 {
     <AntDesign.Progress Status="@(ex is null ? ProgressStatus.Active : ProgressStatus.Exception)" Percent="loadingProgress" />
@@ -24,6 +25,7 @@ else if (ex is not null)
 }
 else
 {
+    <SelectSplitDays ValueChanged="UpdateDaySplit"/>
     <Area Config="config" @ref="areaChart" OnFirstRender="c => c.ChangeData(data)" />
     <Line Config="configLine" @ref="lineChart" OnFirstRender="c => c.ChangeData(data)" />
 }
@@ -46,8 +48,23 @@ else
     }
 
     private List<GraphItem> data;
+    private List<GetPurchases.Response> purchases;
 
     private double loadingProgress = 0;
+
+    private int daysToSplit = 1;
+
+    private async Task UpdateDaySplit(int newDaysToSplit)
+    {
+        if (daysToSplit == newDaysToSplit)
+        {
+            return;
+        }
+        daysToSplit = newDaysToSplit;
+        var (chartData, chartSelected) = GetItemsFromResponse(purchases);
+        data = chartData;
+        await UpdateCharts(updateConfig: false);
+    }
 
     private async Task LoadData()
     {
@@ -57,7 +74,7 @@ else
         int loaded = 0;
         int pageSize = 10;
         int pageNum = 0;
-        var purchases = new List<GetPurchases.Response>();
+        purchases = new List<GetPurchases.Response>();
         var updatePeriod = TimeSpan.FromSeconds(1.5);
         var lastUpdate = DateTimeOffset.MinValue;
         try
@@ -91,17 +108,24 @@ else
         }
     }
 
-    private async Task UpdateCharts()
+    private async Task UpdateCharts(bool updateConfig = true)
     {
         if (areaChart != null)
         {
             await areaChart.ChangeData(data);
-            await areaChart.UpdateConfig(config);
+            if (updateConfig)
+            {
+
+                await areaChart.UpdateConfig(config);
+            }
         }
         if (lineChart != null)
         {
             await lineChart.ChangeData(data);
-            await lineChart.UpdateConfig(configLine);
+            if (updateConfig)
+            {
+                await lineChart.UpdateConfig(configLine);
+            }
         }
     }
 
@@ -116,15 +140,16 @@ else
             .OrderBy(cc => cc.count)
             .Select(cc => cc.category);
 
+        var firstDate = items.First().Date.Date;
 
         var result = items
-            .Select(r => (date: r.Date.ToString("yyyy-MM-dd"), item: r))
-            .GroupBy(r => r.date)
+            .Select((r, i) => (date: r.Date.Date, item: r))
+            .GroupBy(r => r.date.AddDays(-Math.Floor((r.date - firstDate).TotalDays % daysToSplit)))
             .Select(g => (date: g.Key, items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0]).ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
             .Select(g => (date: g.date, items: categories.Select(c => (category: c, price: g.items.TryGetValue(c, out var price) ? price : 0))))
             .SelectMany(g => g.items.Select(i => new GraphItem
             {
-                Date = g.date,
+                Date = g.date.ToString("yyyy-MM-dd"),
                 Category = i.category,
                 Value = i.price
             }))

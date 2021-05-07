@@ -1,0 +1,62 @@
+﻿<Space>
+    <SpaceItem>
+        <Text>Обощать за</Text>
+    </SpaceItem>
+    <SpaceItem>
+        <Select TItemValue="Splitting" TItem="Splitting" OnSelectedItemChanged="UpdateMode">
+            <SelectOptions>
+                <SelectOption TItemValue="Splitting" TItem="Splitting" Value="Splitting.Day" Label="День" />
+                <SelectOption TItemValue="Splitting" TItem="Splitting" Value="Splitting.Week" Label="Неделю" />
+                <SelectOption TItemValue="Splitting" TItem="Splitting" Value="Splitting.Day_30" Label="30 дней" />
+                <SelectOption TItemValue="Splitting" TItem="Splitting" Value="Splitting.Custom" Label="Вручную" />
+            </SelectOptions>
+        </Select>
+    </SpaceItem>
+    @if (splittingMode == Splitting.Custom)
+    {
+        <SpaceItem>
+            <AntDesign.InputNumber Min="1" Value="Value" OnChange="(int value) => UpdateDaySplit(value)" />
+        </SpaceItem>
+    }
+</Space>
+@code {
+
+    [Parameter]
+    public int Value { get; set; } = 1;
+    [Parameter]
+    public EventCallback<int> ValueChanged { get; set; }
+
+
+    private async void UpdateMode(Splitting splittingMode)
+    {
+        this.splittingMode = splittingMode;
+        await (splittingMode switch
+        {
+            Splitting.Day => UpdateDaySplit(1),
+            Splitting.Week => UpdateDaySplit(7),
+            Splitting.Day_30 => UpdateDaySplit(30),
+            Splitting.Custom => UpdateDaySplit(Value),
+            _ => Task.CompletedTask
+        });
+        StateHasChanged();
+    }
+
+    private Splitting splittingMode;
+
+    private async Task UpdateDaySplit(int customValue)
+    {
+        if (Value != customValue)
+        {
+            await ValueChanged.InvokeAsync(Value = customValue);
+        }
+    }
+
+    private enum Splitting
+    {
+        Day,
+        Week, // TODO: Change to week
+        Day_30, // TODO: Change to month
+        Custom
+    }
+
+}

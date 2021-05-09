@@ -1,3 +1,4 @@
+using AspNetCore.Proxy;
 using FinanceManage.CQRS.Handlers.Server;
 using FinanceManage.Database;
 using FinanceManage.Models.ServerSide.Options;
@@ -22,7 +23,7 @@ namespace FinanceManage.Site.Server
         {
             Configuration = configuration;
         }
-
+        private bool IsNeedForwardingApi => Configuration.GetValue<bool>("FOWRAWD_API");
         public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -49,6 +50,11 @@ namespace FinanceManage.Site.Server
             })
             .AddScheme<TelegramWidgetOptions, TelegramWidgetAuthenticationHandler>
                     (AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme, op => { });
+
+            if (IsNeedForwardingApi)
+            {
+                services.AddProxies();
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,6 +64,14 @@ namespace FinanceManage.Site.Server
             {
                 app.UseDeveloperExceptionPage();
                 app.UseWebAssemblyDebugging();
+                if (IsNeedForwardingApi)
+                {
+                    // Mock puchases info from real personal data
+                    app.UseProxies(proxies => proxies.Map("api/purchases/{id}", proxy => proxy.UseHttp((context, args) =>
+                    {
+                        return $"http://127.0.0.1.nip.io/devdata/purchases.json";
+                    })));
+                }
             }
             else
             {
@@ -68,6 +82,8 @@ namespace FinanceManage.Site.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            
 
             app.UseAuthentication();
             app.UseAuthorization();

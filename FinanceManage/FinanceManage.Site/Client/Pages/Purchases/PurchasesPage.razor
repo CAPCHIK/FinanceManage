@@ -25,7 +25,7 @@ else if (ex is not null)
 }
 else
 {
-    <SelectSplitDays ValueChanged="UpdateDaySplit"/>
+    <SelectSplitDays ValueChanged="UpdateDaySplit" />
     <Area Config="config" @ref="areaChart" OnFirstRender="c => c.ChangeData(data)" />
     <Line Config="configLine" @ref="lineChart" OnFirstRender="c => c.ChangeData(data)" />
 }
@@ -40,11 +40,17 @@ else
 
     private Exception ex;
 
-    class GraphItem
+    record GraphItem
     {
-        public string Date { get; set; }
-        public double Value { get; set; }
-        public string Category { get; set; }
+        public GraphItem(DateTime date, string category, double price)
+        {
+            Date = date.ToString("yyyy-MM-dd");
+            Category = category;
+            Value = price;
+        }
+        public string Date { get; }
+        public double Value { get; }
+        public string Category { get; }
     }
 
     private List<GraphItem> data;
@@ -141,26 +147,30 @@ else
             .Select(cc => cc.category);
 
         var firstDate = items.First().Date.Date;
+        var lastDate = items.Last().Date.Date;
 
-        var result = items
+        var recordsByDay = items
             .Select((r, i) => (date: r.Date.Date, item: r))
             .GroupBy(r => r.date.AddDays(-Math.Floor((r.date - firstDate).TotalDays % daysToSplit)))
-            .Select(g => (date: g.Key, items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0]).ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
-            .Select(g => (date: g.date, items: categories.Select(c => (category: c, price: g.items.TryGetValue(c, out var price) ? price : 0))))
-            .SelectMany(g => g.items.Select(i => new GraphItem
-            {
-                Date = g.date.ToString("yyyy-MM-dd"),
-                Category = i.category,
-                Value = i.price
-            }))
-            .ToList();
+            .Select(g => (
+                date: g.Key,
+                items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0])
+                        .ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
+            .ToDictionary(g => g.date, g => g.items);
 
+        var allRecords = Enumerable.Range(0, (int)(lastDate - firstDate).TotalDays)
+            .Select(n => firstDate.AddDays(n))
+            .SelectMany(d => recordsByDay.TryGetValue(d, out var items) ?
+                            categories.Select(c => new GraphItem(d, c, items.TryGetValue(c, out var price) ? price : 0)) :
+                            categories.Select(c => new GraphItem(d, c, 0))
+                        )
+            .ToList();
 
         var middle = categoriesCounts.Select(cc => cc.count).Average();
         var selected = categoriesCounts
              .Where(cc => cc.count <= middle)
              .ToDictionary(cc => cc.category, _ => false);
-        return (result, selected);
+        return (allRecords, selected);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

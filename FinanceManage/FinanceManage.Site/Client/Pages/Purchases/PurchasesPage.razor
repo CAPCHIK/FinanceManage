@@ -147,8 +147,6 @@ else
             .Select(cc => cc.category);
 
         var firstDate = items.First().Date.Date;
-        var lastDate = items.Last().Date.Date;
-
         var recordsByDay = items
             .Select((r, i) => (date: r.Date.Date, item: r))
             .GroupBy(r => r.date.AddDays(-Math.Floor((r.date - firstDate).TotalDays % daysToSplit)))
@@ -157,6 +155,8 @@ else
                 items: g.GroupBy(itemInDay => itemInDay.item.Category.Split(' ')[0])
                         .ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
             .ToDictionary(g => g.date, g => g.items);
+
+        var lastDate = items.Last().Date.Date.AddDays(1);
 
         var allRecords = Enumerable.Range(0, (int)Math.Ceiling((lastDate - firstDate).TotalDays / daysToSplit))
             .Select(n => firstDate.AddDays(n * daysToSplit))
@@ -196,7 +196,7 @@ else
         XAxis = new ValueCatTimeAxis
         {
             Type = "time",
-            Mask = "YYYY-MM-D",
+            Mask = "YYYY-MM-DD",
             Visible = true,
             Label = new BaseAxisLabel
             {
@@ -209,11 +209,11 @@ else
         {
         },
         Responsive = true,
-        //Slider = new AreaConfig.SliderCfg
-        //{
-        //    Start = 0.3f,
-        //    End = 0.8f
-        //},
+        Slider = new SliderConfig
+        {
+            Start = 0f,
+            End = 1f
+        },
     };
     LineConfig configLine = new LineConfig
     {
@@ -228,7 +228,7 @@ else
         XAxis = new ValueCatTimeAxis
         {
             Type = "time",
-            Mask = "YYYY-MM-D",
+            Mask = "YYYY-MM-DD",
             Visible = true,
             Label = new BaseAxisLabel
             {
@@ -241,10 +241,10 @@ else
         {
         },
         Responsive = true,
-        //Slider = new AreaConfig.SliderCfg
-        //{
-        //    Start = 0.3f,
-        //    End = 0.8f
-        //},
+        Slider = new LineSliderConfig
+        {
+            Start = 0f,
+            End = 1f
+        },
     };
 }

@@ -158,8 +158,8 @@ else
                         .ToDictionary(dayGroup => dayGroup.Key, dayGroup => Math.Round(dayGroup.Sum(dg => dg.item.Price), 2))))
             .ToDictionary(g => g.date, g => g.items);
 
-        var allRecords = Enumerable.Range(0, (int)(lastDate - firstDate).TotalDays)
-            .Select(n => firstDate.AddDays(n))
+        var allRecords = Enumerable.Range(0, (int)Math.Ceiling((lastDate - firstDate).TotalDays / daysToSplit))
+            .Select(n => firstDate.AddDays(n * daysToSplit))
             .SelectMany(d => recordsByDay.TryGetValue(d, out var items) ?
                             categories.Select(c => new GraphItem(d, c, items.TryGetValue(c, out var price) ? price : 0)) :
                             categories.Select(c => new GraphItem(d, c, 0))

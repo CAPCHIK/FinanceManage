@@ -36,8 +36,13 @@ namespace FinanceManage.CQRS.Handlers.Server
         {
             var selection = dbContext.Purchases
                 .Where(p => p.TelegramChatId == request.ChatId);
+            selection = request.Ordering switch
+            {
+                Ordering.OldToNew => selection.OrderBy(p => p.Date),
+                Ordering.NewToOld => selection.OrderByDescending(p => p.Date),
+                _ => throw new ArgumentException("Incorrect ordering", nameof(request))
+            };
             var list = await selection
-                .OrderBy(p => p.Date)
                 .Skip(request.PageNum * request.PageSize)
                 .Take(request.PageSize)
                 .ProjectTo<Response>(mapper.ConfigurationProvider)

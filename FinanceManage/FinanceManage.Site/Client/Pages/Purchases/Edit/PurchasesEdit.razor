@@ -74,7 +74,7 @@
     {
         data = null;
         StateHasChanged();
-        data = await Mediator.Send(new GetPurchases.Command(ChatId, PageIndex - 1, PageSize));
+        data = await Mediator.Send(new GetPurchases.Command(ChatId, PageIndex - 1, PageSize, GetPurchases.Ordering.NewToOld));
         StateHasChanged();
     }
 }

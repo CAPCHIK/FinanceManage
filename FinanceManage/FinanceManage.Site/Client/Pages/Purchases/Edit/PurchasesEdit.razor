@@ -1,4 +1,5 @@
-﻿@page "/purchases/{ChatId:long}/edit/{PageIndex:int}/{PageSize:int}"
+﻿@page "/purchases/{ChatId:long}/edit/{PageIndex:int}/{PageSize:int}/{SearchText}"
+@page "/purchases/{ChatId:long}/edit/{PageIndex:int}/{PageSize:int}"
 @page "/purchases/{ChatId:long}/edit/{PageIndex:int}"
 @page "/purchases/{ChatId:long}/edit"
 @attribute [Authorize]
@@ -6,24 +7,29 @@
 @inject NavigationManager NavigationManager
 
 
-<Table Title="Редактирование истории покупок"
-       DataSource="Purchases"
+<Table DataSource="Purchases"
        Loading="data == null"
        Total="data?.Total ?? 0"
        PageSize="PageSize"
        PageIndex="PageIndex"
        PageSizeChanged="PageSizeChanged"
        PageIndexChanged="PageIndexChanged">
-    <Column Field="context.Date" Title="Дата" />
-    <Column Field="context.Category" Title="Категория">
-        <CategoryRender Category="@context.Category" />
-    </Column>
-    <Column Field="context.Price" Title="Цена" />
-    <ActionColumn>
-        <Button Size="large" Style="display: flex; align-items: center;" OnClick="() => editModal.Show(context, LoadData)">
-            <Icon Type="edit" Theme="outline" />
-        </Button>
-    </ActionColumn>
+    <TitleTemplate>
+        <Text>Редактирование истории покупок</Text>
+        <Search Placeholder="Поиск по категории" Size="@InputSize.Default" @bind-Value="@SearchText" OnPressEnter="OnSearch" />
+    </TitleTemplate>
+    <ChildContent>
+        <Column Field="context.Date" Title="Дата" />
+        <Column Field="context.Category" Title="Категория">
+            <CategoryRender Category="@context.Category" />
+        </Column>
+        <Column Field="context.Price" Title="Цена" />
+        <ActionColumn>
+            <Button Size="large" Style="display: flex; align-items: center;" OnClick="() => editModal.Show(context, LoadData)">
+                <Icon Type="edit" Theme="outline" />
+            </Button>
+        </ActionColumn>
+    </ChildContent>
 </Table>
 <EditOnePurchaseModal @ref="editModal" />
 
@@ -34,6 +40,9 @@
     public int PageIndex { get; set; }
     [Parameter]
     public int PageSize { get; set; } = 10;
+    [Parameter]
+    public string SearchText { get; set; } = null;
+
 
     private List<GetPurchases.Response> Purchases => data?.Items ?? new List<GetPurchases.Response>();
     private ListWrapper<GetPurchases.Response> data;
@@ -70,11 +79,16 @@
         NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{newPageNum}/{PageSize}");
     }
 
+    private void OnSearch(KeyboardEventArgs args)
+    {
+        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{1}/{PageSize}/{Uri.EscapeUriString(SearchText)}");
+    }
+
     private async Task LoadData()
     {
         data = null;
         StateHasChanged();
-        data = await Mediator.Send(new GetPurchases.Command(ChatId, PageIndex - 1, PageSize, GetPurchases.Ordering.NewToOld));
+        data = await Mediator.Send(new GetPurchases.Command(ChatId, PageIndex - 1, PageSize, GetPurchases.Ordering.NewToOld, SearchText));
         StateHasChanged();
     }
 }

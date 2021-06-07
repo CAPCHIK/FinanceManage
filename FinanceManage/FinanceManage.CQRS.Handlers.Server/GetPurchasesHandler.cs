@@ -36,6 +36,12 @@ namespace FinanceManage.CQRS.Handlers.Server
         {
             var selection = dbContext.Purchases
                 .Where(p => p.TelegramChatId == request.ChatId);
+
+            if (!string.IsNullOrEmpty(request.SearchToken))
+            {
+                selection = selection.Where(p => EF.Functions.ILike(p.Category, "%" + request.SearchToken.Replace("%" , @"\%").Replace("_", @"\_") + "%"));
+            }
+
             selection = request.Ordering switch
             {
                 Ordering.OldToNew => selection.OrderBy(p => p.Date),

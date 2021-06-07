@@ -72,11 +72,11 @@
 
     private void PageSizeChanged(int newPageSize)
     {
-        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{PageIndex}/{newPageSize}");
+        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{PageIndex}/{newPageSize}/{Uri.EscapeUriString(SearchText)}");
     }
     private void PageIndexChanged(int newPageNum)
     {
-        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{newPageNum}/{PageSize}");
+        NavigationManager.NavigateTo($"/purchases/{ChatId}/edit/{newPageNum}/{PageSize}/{Uri.EscapeUriString(SearchText)}");
     }
 
     private void OnSearch(KeyboardEventArgs args)

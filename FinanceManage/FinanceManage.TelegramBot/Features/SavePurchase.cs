@@ -22,7 +22,9 @@ namespace FinanceManage.TelegramBot.Features
         {
             public CommandMapping()
             {
-                CreateMap<Command, Purchase>();
+                CreateMap<Command, Purchase>()
+                    .ForMember(p => p.Category, map => map.MapFrom(c => !c.Category.Contains(' ') ? c.Category : c.Category.Substring(0, c.Category.IndexOf(' '))))
+                    .ForMember(p => p.Description, map => map.MapFrom(c => !c.Category.Contains(' ') ? c.Category : c.Category.Substring(c.Category.IndexOf(' '), c.Category.Length - c.Category.IndexOf(' '))));
             }
         }
 

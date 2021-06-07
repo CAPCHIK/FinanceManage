@@ -31,22 +31,19 @@ namespace FinanceManage.CQRS.Handlers.Server
         {
             var dateStart = request.WeekStart;
             var dateEnd = request.WeekStart.AddDays(7);
-
+            Expression<Func<Purchase, string>> groupExpression = request.CategoryMode switch
+            {
+                CategoryMode.Compact => p => p.Category,
+                CategoryMode.Complete => p => p.Category + " " + p.Description,
+                _ => throw new ArgumentOutOfRangeException(nameof(request), $"Incorrect ${nameof(request.CategoryMode)}")
+            };
             var response = await dbContext.Purchases
                 .Where(p => p.TelegramChatId == request.ChatId
                          && p.Date >= dateStart
                          && p.Date <= dateEnd)
-                .GroupBy(p => p.Category)
+                .GroupBy(groupExpression)
                 .Select(g => new { Caterory = g.Key, Sum = g.Sum(p => p.Price) })
                 .ToListAsync(cancellationToken: cancellationToken);
-
-            if (request.CategoryMode == CategoryMode.Compact)
-            {
-                response = response
-                    .GroupBy(r => r.Caterory.Split(' ').First())
-                    .Select(g => new { Caterory = g.Key, Sum = g.Sum(p => p.Sum) })
-                    .ToList();
-            }
 
             return new Result(
                 response.Select(r => r.Sum).DefaultIfEmpty(0).Sum(),

@@ -21,6 +21,10 @@
     <ProjectReference Include="..\Shared\FinanceManage.Site.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\devdata\" />
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1local_1json__JsonSchema="appse" /></VisualStudio></ProjectExtensions>
 
 

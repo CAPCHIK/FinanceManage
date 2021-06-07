@@ -10,6 +10,7 @@ namespace FinanceManage.CQRS.Queries
     public class GetPurchases
     {
         public record Response(Guid Id, int BuyerTelegramId, string Category, float Price, DateTimeOffset Date);
-        public record Command(long ChatId, int PageNum = 0, int PageSize = 10) : IRequest<ListWrapper<Response>>;
+        public record Command(long ChatId, int PageNum = 0, int PageSize = 10, Ordering Ordering = Ordering.OldToNew) : IRequest<ListWrapper<Response>>;
+        public enum Ordering { OldToNew, NewToOld }
     }
 }

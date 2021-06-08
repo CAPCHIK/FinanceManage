@@ -57,7 +57,7 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                 switch (message.Text)
                 {
                     case SpendingStatistic:
-                        var (text, markup) = await mediator.Send(new PrepareWeekSpendingMessage.Command(message.Date.Date.AddDays(-6), message.Chat.Id, WeekSpending.CategoryMode.Compact));
+                        var (text, markup) = await mediator.Send(new PrepareWeekSpendingMessage.Command(message.Date.Date.AddDays(-6), message.Chat.Id, AverageSpending.CategoryMode.Compact));
                         await mediator.Send(new SendMessage.Command(message.Chat.Id, text, message.MessageId, ParseMode.MarkdownV2, markup));
                         break;
                     case AllPurchasesGraph:

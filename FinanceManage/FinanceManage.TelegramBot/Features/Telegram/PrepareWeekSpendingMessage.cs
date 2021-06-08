@@ -19,7 +19,7 @@ namespace FinanceManage.TelegramBot.Features.Telegram
     public class PrepareWeekSpendingMessage
     {
         public record Response(string Text, InlineKeyboardMarkup Markup);
-        public record Command(DateTimeOffset StartDay, long ChatId, WeekSpending.CategoryMode CategoryMode) : IRequest<Response>;
+        public record Command(DateTimeOffset StartDay, long ChatId, AverageSpending.CategoryMode CategoryMode) : IRequest<Response>;
 
         public class Handler : IRequestHandler<Command, Response>
         {
@@ -38,8 +38,8 @@ namespace FinanceManage.TelegramBot.Features.Telegram
             }
             public async Task<Response> Handle(Command request, CancellationToken cancellationToken)
             {
-                var result = await mediator.Send(new WeekSpending.Command(
-                    request.StartDay,
+                var result = await mediator.Send(new AverageSpending.Command(
+                    request.StartDay, 7,
                     request.ChatId,
                     request.CategoryMode), cancellationToken);
                 string resultText = BuildWeekSpendingMessage(result);
@@ -55,13 +55,13 @@ namespace FinanceManage.TelegramBot.Features.Telegram
                 InlineKeyboardButton categoryModeButton;
                 switch (request.CategoryMode)
                 {
-                    case WeekSpending.CategoryMode.Compact:
-                        var toComplete = new WeekSpendingStatisticData(request.StartDay, WeekSpending.CategoryMode.Complete);
+                    case AverageSpending.CategoryMode.Compact:
+                        var toComplete = new WeekSpendingStatisticData(request.StartDay, AverageSpending.CategoryMode.Complete);
                         var toCompleteJson = JsonSerializer.Serialize(toComplete, JsonOptions.InlineJeyboardOptions.Value);
                         categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.HearNoEvilMonkey, toCompleteJson);
                         break;
-                    case WeekSpending.CategoryMode.Complete:
-                        var toCompact = new WeekSpendingStatisticData(request.StartDay, WeekSpending.CategoryMode.Compact);
+                    case AverageSpending.CategoryMode.Complete:
+                        var toCompact = new WeekSpendingStatisticData(request.StartDay, AverageSpending.CategoryMode.Compact);
                         var toCompactJson = JsonSerializer.Serialize(toCompact, JsonOptions.InlineJeyboardOptions.Value);
                         categoryModeButton = InlineKeyboardButton.WithCallbackData(Emoji.SeeNoEvilMonkey, toCompactJson);
                         break;
@@ -101,7 +101,7 @@ namespace FinanceManage.TelegramBot.Features.Telegram
             }
 
 
-            private static string BuildWeekSpendingMessage(WeekSpending.Result result)
+            private static string BuildWeekSpendingMessage(AverageSpending.Result result)
             {
                 var builder = new StringBuilder();
                 builder.Append(result.From.CompactMarkdownV2Date());

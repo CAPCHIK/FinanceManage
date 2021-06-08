@@ -10,18 +10,18 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static FinanceManage.CQRS.Queries.WeekSpending;
+using static FinanceManage.CQRS.Queries.AverageSpending;
 
 namespace FinanceManage.CQRS.Handlers.Server
 {
-    public class WeekSpendingHandler : IRequestHandler<Command, Result>
+    public class AverageSpendingHandler : IRequestHandler<Command, Result>
     {
         private readonly FinanceManageDbContext dbContext;
-        private readonly ILogger<WeekSpendingHandler> logger;
+        private readonly ILogger<AverageSpendingHandler> logger;
 
-        public WeekSpendingHandler(
+        public AverageSpendingHandler(
             FinanceManageDbContext dbContext,
-            ILogger<WeekSpendingHandler> logger)
+            ILogger<AverageSpendingHandler> logger)
         {
             this.dbContext = dbContext;
             this.logger = logger;
@@ -29,8 +29,8 @@ namespace FinanceManage.CQRS.Handlers.Server
 
         async Task<Result> IRequestHandler<Command, Result>.Handle(Command request, CancellationToken cancellationToken)
         {
-            var dateStart = request.WeekStart;
-            var dateEnd = request.WeekStart.AddDays(7);
+            var dateStart = request.DateFrom;
+            var dateEnd = request.DateFrom.AddDays(request.DaysCount);
 
             var response = await dbContext.Purchases
                 .Where(p => p.TelegramChatId == request.ChatId

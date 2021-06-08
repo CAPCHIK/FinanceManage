@@ -1,0 +1,143 @@
+﻿@inject IMediator Mediator
+@inject IJSRuntime JS
+
+@using AntDesign.Charts
+
+@if (data == null)
+{
+    <Spin Size="large" Spinning />
+}
+else
+{
+    <Pie Data="data1" Config="config1" JsConfig="@GetJsConf()" OnFirstRender="(pie) => pie.UpdateChart(data: data)"/>
+}
+
+
+@code {
+
+    [Parameter]
+    public long ChatId { get; set; }
+
+    private AverageSpending.Result result;
+    private record DataItem(string type, float value);
+    private List<DataItem> data;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            result = await Mediator.Send(new AverageSpending.Command(DateTimeOffset.UtcNow.AddDays(-29).Date, 30, ChatId, AverageSpending.CategoryMode.Compact));
+            await JS.InvokeVoidAsync("console.log", data);
+            data = result.ByCategory.Select(kvp => new DataItem(kvp.Key, kvp.Value)).ToList();
+            StateHasChanged();
+        }
+    }
+
+    private string GetJsConf()
+    {
+        var baseConf = jsConf;
+        var conf = baseConf.Replace("<fontSize>", result == null ?
+                                                        14.ToString() :
+                                                        (result.Sum.ToString().Length switch {
+                                                                <= 6 => 20,
+                                                                _ => 14
+                                                        }).ToString());
+        JS.InvokeVoidAsync("console.log", conf);
+        return conf;
+    }
+
+    readonly string jsConf = @"{
+statistic: {
+title: {formatter: (i) => i ? i.type : 'Всего'},
+content: { style:{ fontSize: <fontSize>, }, },
+},
+meta: {
+value: {
+formatter: (v) => { var formatter = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB'}); return formatter.format(v ? v : 0);},
+},
+},
+label: {
+type: 'inner',
+autoRotate: false,
+offset: '-50%',
+style: { textAlign: 'center' },
+formatter: (o, a) => { return `${(o.percent * 100).toFixed(0)}%`},
+},
+interactions: [
+{ type: 'element-selected' },
+{ type: 'element-active' },
+{
+type: 'pie-statistic-active',
+cfg: {
+start: [
+{ trigger: 'element:mouseenter', action: 'pie-statistic:change' },
+{ trigger: 'legend-item:mouseenter', action: 'pie-statistic:change' },
+],
+end: [
+{ trigger: 'element:mouseleave', action: 'pie-statistic:reset' },
+{ trigger: 'legend-item:mouseleave', action: 'pie-statistic:reset' },
+],
+},
+},
+]
+}";
+
+    readonly object[] data1 =
+    {
+        new
+        {
+            type = "Category One",
+            value = 35
+        },
+        new
+        {
+            type = "Category Two",
+            value = 40
+        },
+        new
+        {
+            type = "Category Three",
+            value = 18
+        },
+        new
+        {
+            type = "Category Four",
+            value = 15
+        },
+        new
+        {
+            type = "分类五",
+            value = 15
+        },
+        new
+        {
+            type = "other",
+            value = 5
+        }
+    };
+
+    readonly PieConfig config1 = new PieConfig
+    {
+        ForceFit = true,
+        Title = new AntDesign.Charts.Title
+        {
+            Visible = true,
+            Text = "Donut Diagram"
+        },
+        Description = new Description
+        {
+            Visible = true,
+            Text = "The outer radius of the ring graph determines the size of the ring graph, and the inner radius determines the thickness of the ring graph."
+        },
+        Radius = 0.8,
+        Padding = "auto",
+        AngleField = "value",
+        ColorField = "type",
+        InnerRadius = 0.64,
+        Statistic = new PieStatistic
+        {
+            //Title = "Всего"
+        }
+    };
+}

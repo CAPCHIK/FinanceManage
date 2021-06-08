@@ -25,7 +25,7 @@ namespace FinanceManage.Site.Client
             builder.Services.AddAntDesign();
             builder.Services.AddBlazoredLocalStorage();
 
-            builder.Services.AddMediatR(typeof(WeekSpendingHandler).Assembly);
+            builder.Services.AddMediatR(typeof(AverageSpendingHandler).Assembly);
 
 
             builder.Services.AddScoped<AuthenticationStateProvider, TelegramWidgetAuthenticationProvider>();

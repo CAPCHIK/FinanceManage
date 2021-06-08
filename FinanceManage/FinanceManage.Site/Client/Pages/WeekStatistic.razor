@@ -36,7 +36,7 @@ else
     IChartComponent barChart;
 
     private DateTime weekStart;
-    private WeekSpending.CategoryMode categoryMode;
+    private AverageSpending.CategoryMode categoryMode;
 
     private Exception ex;
 
@@ -86,8 +86,8 @@ else
         var categoryModeString = query.Get("category");
 
 
-        categoryMode = Enum.TryParse<WeekSpending.CategoryMode>(categoryModeString, out var parsedCategory)
-            ? parsedCategory : WeekSpending.CategoryMode.Compact;
+        categoryMode = Enum.TryParse<AverageSpending.CategoryMode>(categoryModeString, out var parsedCategory)
+            ? parsedCategory : AverageSpending.CategoryMode.Compact;
 
         await Load();
     }
@@ -98,7 +98,7 @@ else
         {
             data1 = default;
             ex = default;
-            var data = await Mediator.Send(new WeekSpending.Command(weekStart, ChatId, categoryMode));
+            var data = await Mediator.Send(new AverageSpending.Command(weekStart, 7, ChatId, categoryMode));
             data1 = data.ByCategory.OrderByDescending(kvp => kvp.Value).ToList();
         }
         catch (Exception ex)

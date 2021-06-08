@@ -5,7 +5,8 @@
 <AntList Bordered DataSource="chats" Loading="@(chats == null)">
     <ChildContent Context="item">
         <ListItem>
-            <p>@item.ChatName</p>
+            <Title Level="3">@item.ChatName</Title>
+            <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="item.ChatId" />
             <Space>
                 <SpaceItem>
                     <NavLink href="@($"purchases/{item.ChatId}/edit")">

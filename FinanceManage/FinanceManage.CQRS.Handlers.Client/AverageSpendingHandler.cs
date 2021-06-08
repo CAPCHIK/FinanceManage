@@ -11,18 +11,18 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static FinanceManage.CQRS.Queries.WeekSpending;
+using static FinanceManage.CQRS.Queries.AverageSpending;
 
 namespace FinanceManage.CQRS.Handlers.Client
 {
-    public class WeekSpendingHandler : IRequestHandler<Command, Result>
+    public class AverageSpendingHandler : IRequestHandler<Command, Result>
     {
         private readonly HttpClient httpClient;
-        private readonly ILogger<WeekSpendingHandler> logger;
+        private readonly ILogger<AverageSpendingHandler> logger;
 
-        public WeekSpendingHandler(
+        public AverageSpendingHandler(
             HttpClient httpClient,
-            ILogger<WeekSpendingHandler> logger)
+            ILogger<AverageSpendingHandler> logger)
         {
             this.httpClient = httpClient;
             this.logger = logger;

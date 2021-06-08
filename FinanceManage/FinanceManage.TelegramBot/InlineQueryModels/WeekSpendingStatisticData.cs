@@ -11,7 +11,7 @@ namespace FinanceManage.TelegramBot.InlineQueryModels
     public class WeekSpendingStatisticData : InlineQueryBase
     {
         public DateTimeOffset WeekStart { get; set; }
-        public WeekSpending.CategoryMode Category { get; set; }
+        public AverageSpending.CategoryMode Category { get; set; }
 
         /// <summary>
         /// Only for json serialize
@@ -20,7 +20,7 @@ namespace FinanceManage.TelegramBot.InlineQueryModels
         {
 
         }
-        public WeekSpendingStatisticData(DateTimeOffset weekStart, WeekSpending.CategoryMode category) 
+        public WeekSpendingStatisticData(DateTimeOffset weekStart, AverageSpending.CategoryMode category) 
             : base(CallbackQueryCommand.WeekSpendingStatistic)
         {
             WeekStart = weekStart;

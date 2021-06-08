@@ -1,0 +1,132 @@
+﻿@page "/test"
+@inject Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment Env
+@using AntDesign.Charts
+
+@inject IMediator Mediator
+@inject IJSRuntime JS
+
+@if (Env.Environment != "Development")
+{
+    <AntDesign.Text>That page works only in Development mode</AntDesign.Text>
+    <NavLink href="/"><Button Type="@ButtonType.Primary">Go to home page</Button></NavLink>
+}
+else
+{
+    <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="134050887" />
+    <Pie Data="data1" Config="config1" JsConfig="@jsConf" @ref="pie" />
+}
+
+@code {
+
+    Pie pie;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        @if (Env.Environment != "Development")
+        {
+            return;
+        }
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            var data = await Mediator.Send(new AverageSpending.Command(DateTimeOffset.UtcNow.AddDays(-29).Date, 30, 134050887, AverageSpending.CategoryMode.Compact));
+            await JS.InvokeVoidAsync("console.log", data);
+            var list = data.ByCategory.Select(kvp => new { type = kvp.Key, value = kvp.Value }).ToArray();
+            await pie.ChangeData(list);
+            StateHasChanged();
+        }
+    }
+
+    readonly string jsConf = @"{
+statistic: {
+title: {formatter: (i) => i ? i.type : 'Всего'}
+},
+meta: {
+value: {
+formatter: (v) => `${v} ₽`,
+},
+},
+label: {
+type: 'inner',
+autoRotate: false,
+offset: '-50%',
+style: { textAlign: 'center' },
+formatter: (o, a) => { return `${(o.percent * 100).toFixed(0)}%`},
+},
+interactions: [
+{ type: 'element-selected' },
+{ type: 'element-active' },
+{
+type: 'pie-statistic-active',
+cfg: {
+start: [
+{ trigger: 'element:mouseenter', action: 'pie-statistic:change' },
+{ trigger: 'legend-item:mouseenter', action: 'pie-statistic:change' },
+],
+end: [
+{ trigger: 'element:mouseleave', action: 'pie-statistic:reset' },
+{ trigger: 'legend-item:mouseleave', action: 'pie-statistic:reset' },
+],
+},
+},
+]
+}";
+
+    readonly object[] data1 =
+    {
+        new
+        {
+            type = "Category One",
+            value = 35
+        },
+        new
+        {
+            type = "Category Two",
+            value = 40
+        },
+        new
+        {
+            type = "Category Three",
+            value = 18
+        },
+        new
+        {
+            type = "Category Four",
+            value = 15
+        },
+        new
+        {
+            type = "分类五",
+            value = 15
+        },
+        new
+        {
+            type = "other",
+            value = 5
+        }
+    };
+
+    readonly PieConfig config1 = new PieConfig
+    {
+        ForceFit = true,
+        Title = new AntDesign.Charts.Title
+        {
+            Visible = true,
+            Text = "Donut Diagram"
+        },
+        Description = new Description
+        {
+            Visible = true,
+            Text = "The outer radius of the ring graph determines the size of the ring graph, and the inner radius determines the thickness of the ring graph."
+        },
+        Radius = 0.8,
+        Padding = "auto",
+        AngleField = "value",
+        ColorField = "type",
+        InnerRadius = 0.64,
+        Statistic = new PieStatistic
+        {
+            //Title = "Всего"
+        }
+    };
+}

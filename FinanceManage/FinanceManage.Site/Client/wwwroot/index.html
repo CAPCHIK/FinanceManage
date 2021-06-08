@@ -100,6 +100,10 @@
         window.saveAuthReference = function (reference) {
             window.authHandlerReference = reference;
         }
+        var formatter = new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' });
+        window.formatMoney = function (moneyNumber) {
+            return formatter.format(moneyNumber)
+        }
         function onTelegramAuth(user) {
             window.authHandlerReference.invokeMethodAsync("UserAuthCallback", user);
         }

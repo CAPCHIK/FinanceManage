@@ -26,7 +26,7 @@ else if (ex is not null)
 else
 {
     <SelectSplitDays ValueChanged="UpdateDaySplit" />
-    <Area Config="config" @ref="areaChart" OnFirstRender="c => c.ChangeData(data)" />
+    <Area Config="config" JsConfig="@jsConfig" @ref="areaChart" OnFirstRender="c => c.ChangeData(data)" />
     <Line Config="configLine" @ref="lineChart" OnFirstRender="c => c.ChangeData(data)" />
 }
 
@@ -122,7 +122,7 @@ else
             if (updateConfig)
             {
 
-                await areaChart.UpdateConfig(config);
+                await areaChart.UpdateChart(config: config, jsConfig: jsConfig);
             }
         }
         if (lineChart != null)
@@ -130,7 +130,7 @@ else
             await lineChart.ChangeData(data);
             if (updateConfig)
             {
-                await lineChart.UpdateConfig(configLine);
+                await areaChart.UpdateChart(config: config, jsConfig: jsConfig);
             }
         }
     }
@@ -182,6 +182,11 @@ else
         }
     }
 
+    private string jsConfig = @"{tooltip: {title: function (d, b) { 
+if (window.PurchasesPageHelpCurrentDate !== d) {window.PurchasesPageHelpCurrentDate = d; window.PurchasesPageHelpGreatSums = {}; }
+window.PurchasesPageHelpGreatSums[b.category] = b.value;
+const sum = Object.values(window.PurchasesPageHelpGreatSums).reduce((a1, a2) => a1 + a2);
+return `${d} | ${window.formatMoney(sum)}`}}}";
 
     AreaConfig config = new AreaConfig
     {

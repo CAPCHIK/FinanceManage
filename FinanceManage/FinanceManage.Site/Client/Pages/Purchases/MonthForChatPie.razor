@@ -9,7 +9,7 @@
 }
 else
 {
-    <Pie Data="data1" Config="config1" JsConfig="@GetJsConf()" OnFirstRender="(pie) => pie.UpdateChart(data: data)"/>
+    <Pie Data="data1" Config="config1" JsConfig="@GetJsConf()" OnFirstRender="(pie) => pie.UpdateChart(data: data)" />
 }
 
 
@@ -27,8 +27,8 @@ else
         await base.OnAfterRenderAsync(firstRender);
         if (firstRender)
         {
-            result = await Mediator.Send(new AverageSpending.Command(DateTimeOffset.UtcNow.AddDays(-29).Date, 30, ChatId, AverageSpending.CategoryMode.Compact));
-            await JS.InvokeVoidAsync("console.log", data);
+            var now = DateTimeOffset.UtcNow;
+            result = await Mediator.Send(new AverageSpending.Command(now.AddDays(-29), now, ChatId, AverageSpending.CategoryMode.Compact));
             data = result.ByCategory.Select(kvp => new DataItem(kvp.Key, kvp.Value)).ToList();
             StateHasChanged();
         }
@@ -39,11 +39,11 @@ else
         var baseConf = jsConf;
         var conf = baseConf.Replace("<fontSize>", result == null ?
                                                         14.ToString() :
-                                                        (result.Sum.ToString().Length switch {
-                                                                <= 6 => 20,
-                                                                _ => 14
+                                                        (result.Sum.ToString().Length switch
+                                                        {
+                                                            <= 6 => 20,
+                                                            _ => 14
                                                         }).ToString());
-        JS.InvokeVoidAsync("console.log", conf);
         return conf;
     }
 

@@ -4,36 +4,46 @@
 
 <AntList Bordered DataSource="chats" Loading="@(chats == null)">
     <ChildContent Context="item">
-        <ListItem>
-            <Title Level="3">@item.ChatName</Title>
-            <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="item.ChatId" />
-            <Space>
-                <SpaceItem>
-                    <NavLink href="@($"purchases/{item.ChatId}/edit")">
-                        <Button Size="large" Style="display: flex; align-items: center;">
-                            <Icon Type="edit" Theme="outline" />
-                            Edit
-                        </Button>
-                    </NavLink>
-                </SpaceItem>
-                <SpaceItem>
-                    <NavLink href="@($"purchases/{item.ChatId}")">
-                        <Button Size="large" Style="display: flex; align-items: center;">
-                            <Icon Type="area-chart" Theme="outline" />
-                            Total
-                        </Button>
-                    </NavLink>
-                </SpaceItem>
+        <ListItem NoFlex="true">
+            <Row Justify="center">
+                <AntDesign.Col>
 
-                <SpaceItem>
-                    <NavLink href="@($"weekStatistic/{item.ChatId}?&category=Compact")">
-                        <Button Size="large" Style="display: flex; align-items: center;">
-                            <Icon Type="bar-chart" Theme="outline" />
-                            Per Week
-                        </Button>
-                    </NavLink>
-                </SpaceItem>
-            </Space>
+                    <Title Level="3">@item.ChatName</Title>
+                </AntDesign.Col>
+                <AntDesign.Col>
+                    <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="item.ChatId" />
+
+                </AntDesign.Col>
+                <AntDesign.Col>
+                    <Space>
+                        <SpaceItem>
+                            <NavLink href="@($"purchases/{item.ChatId}/edit")">
+                                <Button Size="large" Style="display: flex; align-items: center;">
+                                    <Icon Type="edit" Theme="outline" />
+                                    Edit
+                                </Button>
+                            </NavLink>
+                        </SpaceItem>
+                        <SpaceItem>
+                            <NavLink href="@($"purchases/{item.ChatId}")">
+                                <Button Size="large" Style="display: flex; align-items: center;">
+                                    <Icon Type="area-chart" Theme="outline" />
+                                    Total
+                                </Button>
+                            </NavLink>
+                        </SpaceItem>
+
+                        <SpaceItem>
+                            <NavLink href="@($"weekStatistic/{item.ChatId}?&category=Compact")">
+                                <Button Size="large" Style="display: flex; align-items: center;">
+                                    <Icon Type="bar-chart" Theme="outline" />
+                                    Per Week
+                                </Button>
+                            </NavLink>
+                        </SpaceItem>
+                    </Space>
+                </AntDesign.Col>
+            </Row>
         </ListItem>
     </ChildContent>
 </AntList>

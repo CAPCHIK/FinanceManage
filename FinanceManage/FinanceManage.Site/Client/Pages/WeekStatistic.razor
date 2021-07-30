@@ -98,7 +98,7 @@ else
         {
             data1 = default;
             ex = default;
-            var data = await Mediator.Send(new AverageSpending.Command(weekStart, 7, ChatId, categoryMode));
+            var data = await Mediator.Send(new AverageSpending.Command(weekStart, weekStart.AddDays(7), ChatId, categoryMode));
             data1 = data.ByCategory.OrderByDescending(kvp => kvp.Value).ToList();
         }
         catch (Exception ex)

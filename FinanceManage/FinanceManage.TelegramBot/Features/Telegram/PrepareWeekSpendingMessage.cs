@@ -39,7 +39,8 @@ namespace FinanceManage.TelegramBot.Features.Telegram
             public async Task<Response> Handle(Command request, CancellationToken cancellationToken)
             {
                 var result = await mediator.Send(new AverageSpending.Command(
-                    request.StartDay, 7,
+                    request.StartDay,
+                    request.StartDay.AddDays(7),
                     request.ChatId,
                     request.CategoryMode), cancellationToken);
                 string resultText = BuildWeekSpendingMessage(result);

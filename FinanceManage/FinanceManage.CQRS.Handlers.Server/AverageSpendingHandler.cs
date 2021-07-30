@@ -30,12 +30,12 @@ namespace FinanceManage.CQRS.Handlers.Server
         async Task<Result> IRequestHandler<Command, Result>.Handle(Command request, CancellationToken cancellationToken)
         {
             var dateStart = request.DateFrom;
-            var dateEnd = request.DateFrom.AddDays(request.DaysCount);
+            var dateEnd = request.DateTo;
 
             var response = await dbContext.Purchases
                 .Where(p => p.TelegramChatId == request.ChatId
                          && p.Date >= dateStart
-                         && p.Date <= dateEnd)
+                         && p.Date < dateEnd)
                 .GroupBy(p => p.Category)
                 .Select(g => new { Caterory = g.Key, Sum = g.Sum(p => p.Price) })
                 .ToListAsync(cancellationToken: cancellationToken);

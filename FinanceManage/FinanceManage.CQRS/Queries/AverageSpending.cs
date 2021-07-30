@@ -10,7 +10,7 @@ namespace FinanceManage.CQRS.Queries
     public class AverageSpending
     {
         public enum CategoryMode { Compact, Complete }
-        public record Command(DateTimeOffset DateFrom, uint DaysCount, long ChatId, CategoryMode CategoryMode = CategoryMode.Complete) : IRequest<Result>;
+        public record Command(DateTimeOffset DateFrom, DateTimeOffset DateTo, long ChatId, CategoryMode CategoryMode = CategoryMode.Complete) : IRequest<Result>;
         public record Result(float Sum, DateTimeOffset From, DateTimeOffset To, Dictionary<string, float> ByCategory);
     }
 }

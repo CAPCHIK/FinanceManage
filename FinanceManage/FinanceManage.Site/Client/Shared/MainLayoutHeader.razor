@@ -1,14 +1,12 @@
-﻿@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
-@inject ILogoutService LogoutService
+﻿@inject ILogoutService LogoutService
 
 
 <div style="display: flex; justify-content:space-between;">
 
-    <Tooltip Placement="@PlacementType.Bottom" Title="@Configuration.GetSection("BuildInfo").GetSection("BuildId").Value">
-        <NavLink href="">
-            <Text Style="color: white;">FinanceManage</Text>
-        </NavLink>
-    </Tooltip>
+    <NavLink href="">
+        <Text Style="color: white;">FinanceManage</Text>
+    </NavLink>
+
     <AuthorizeView>
         <Authorized>
             <Dropdown>

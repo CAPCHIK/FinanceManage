@@ -4,17 +4,30 @@
             <AuthorizeRouteView RouteData="@routeData"
                                 DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
-                    <h1>Sorry</h1>
-                    <p>You're not authorized to reach this page.</p>
+                    <h1>Простите</h1>
+                    <p>Необходимо войти в аккаунт для просмотра данной страницы.</p>
                 </NotAuthorized>
                 <Authorizing>
-                    <Spin Spinning="true" Tip="Authenticating..." Size="medium" />
+                    <Row Justify="center">
+                        <AntDesign.Col>
+                            <Spin Spinning="true" Tip="Авторизация..." Size="large" />
+                        </AntDesign.Col>
+                    </Row>
                 </Authorizing>
             </AuthorizeRouteView>
         </Found>
         <NotFound>
             <LayoutView Layout="@typeof(MainLayout)">
-                <p>Sorry, there's nothing at this address.</p>
+                <Result Status="404"
+                        Title="Такая страница не найдена">
+                    <Extra>
+                        <NavLink href="/">
+                            <Button Type="@ButtonType.Primary">
+                                Вернуться на главную страницу
+                            </Button>
+                        </NavLink>
+                    </Extra>
+                </Result>
             </LayoutView>
         </NotFound>
     </Router>

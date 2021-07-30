@@ -2,5 +2,9 @@
 
 namespace BuildConfiguration
 {
-    public record BuildInfo(DateTimeOffset Date, string BuildId);
+    public class BuildInfo
+    {
+        public DateTimeOffset Date { get; set; }
+        public string BuildId { get; set; }
+    }
 }

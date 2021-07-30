@@ -1,5 +1,7 @@
 using Blazored.LocalStorage;
+using BuildConfiguration;
 using FinanceManage.CQRS.Handlers.Client;
+using FinanceManage.Site.Client.Models.Options;
 using MediatR;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -20,6 +22,9 @@ namespace FinanceManage.Site.Client
         {
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
+
+            builder.Services.Configure<TelegramBotInfo>(tbi => builder.Configuration.GetSection(nameof(TelegramBotInfo)).Bind(tbi));
+            builder.Services.Configure<BuildInfo>(bi => builder.Configuration.GetSection(nameof(BuildInfo)).Bind(bi));
 
             builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             builder.Services.AddAntDesign();

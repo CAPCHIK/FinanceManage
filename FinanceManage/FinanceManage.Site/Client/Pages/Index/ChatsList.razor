@@ -1,52 +1,70 @@
 ﻿@inject IMediator Mediator
+@inject Microsoft.Extensions.Options.IOptions<FinanceManage.Site.Client.Models.Options.TelegramBotInfo> TelegramBotInfo
+
 
 <Title>Список чатов</Title>
+@if (chats == null)
+{
+    <Row Justify="center">
+        <AntDesign.Col>
+            <Spin Size="large" Tip="Загрузка чатов..."></Spin>
+        </AntDesign.Col>
+    </Row>
+}
+else if (chats.Count == 0)
+{
+    <Space Direction="DirectionVHType.Vertical">
+        <SpaceItem>
+            <AntDesign.Text>Здесь будут отображаться чаты, для которых бот будет собирать статистику трат. Вы можете написать боту напрямую, для сбора личной статистики или добавить его в чат для совместного использования.</AntDesign.Text>
 
-<AntList Bordered DataSource="chats" Loading="@(chats == null)">
-    <ChildContent Context="item">
-        <ListItem NoFlex="true">
-            <Row Justify="center" Align="middle">
-                <AntDesign.Col>
+        </SpaceItem>
+        <SpaceItem>
 
-                    <Title Level="3">@item.ChatName</Title>
-                </AntDesign.Col>
-                <AntDesign.Col>
-                    <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="item.ChatId" />
+            <NavLink href="@($"https://t.me/{TelegramBotInfo.Value.UserName}")">
+                <Button Type="@ButtonType.Primary">Написать боту</Button>
+            </NavLink>
 
-                </AntDesign.Col>
-                <AntDesign.Col>
-                    <Space>
-                        <SpaceItem>
-                            <NavLink href="@($"purchases/{item.ChatId}/edit")">
-                                <Button Size="large" Style="display: flex; align-items: center;">
-                                    <Icon Type="edit" Theme="outline" />
-                                    Редактировать
-                                </Button>
-                            </NavLink>
-                        </SpaceItem>
-                        <SpaceItem>
-                            <NavLink href="@($"purchases/{item.ChatId}")">
-                                <Button Size="large" Style="display: flex; align-items: center;">
-                                    <Icon Type="area-chart" Theme="outline" />
-                                    Графики
-                                </Button>
-                            </NavLink>
-                        </SpaceItem>
-@*
-                        <SpaceItem>
-                            <NavLink href="@($"weekStatistic/{item.ChatId}?&category=Compact")">
-                                <Button Size="large" Style="display: flex; align-items: center;">
-                                    <Icon Type="bar-chart" Theme="outline" />
-                                    Per Week
-                                </Button>
-                            </NavLink>
-                        </SpaceItem>*@
-                    </Space>
-                </AntDesign.Col>
-            </Row>
-        </ListItem>
-    </ChildContent>
-</AntList>
+        </SpaceItem>
+    </Space>
+}
+else
+{
+    <AntList Bordered DataSource="chats">
+        <ChildContent Context="item">
+            <ListItem NoFlex="true">
+                <Row Justify="center" Align="middle">
+                    <AntDesign.Col>
+
+                        <Title Level="3">@item.ChatName</Title>
+                    </AntDesign.Col>
+                    <AntDesign.Col>
+                        <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="item.ChatId" />
+                    </AntDesign.Col>
+                    <AntDesign.Col>
+                        <Space>
+                            <SpaceItem>
+                                <NavLink href="@($"purchases/{item.ChatId}/edit")">
+                                    <Button Size="large" Style="display: flex; align-items: center;">
+                                        <Icon Type="edit" Theme="outline" />
+                                        Редактировать
+                                    </Button>
+                                </NavLink>
+                            </SpaceItem>
+                            <SpaceItem>
+                                <NavLink href="@($"purchases/{item.ChatId}")">
+                                    <Button Size="large" Style="display: flex; align-items: center;">
+                                        <Icon Type="area-chart" Theme="outline" />
+                                        Графики
+                                    </Button>
+                                </NavLink>
+                            </SpaceItem>
+                        </Space>
+                    </AntDesign.Col>
+                </Row>
+            </ListItem>
+        </ChildContent>
+    </AntList>
+}
 
 @code {
     [CascadingParameter]
@@ -59,6 +77,7 @@
     {
         await base.OnParametersSetAsync();
         var state = await authenticationStateTask;
+        //return;
         chats = await Mediator.Send(new GetChatsListForUser.Command(0));
     }
 }

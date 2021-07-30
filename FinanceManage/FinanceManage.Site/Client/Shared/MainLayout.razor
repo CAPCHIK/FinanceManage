@@ -1,15 +1,20 @@
 ﻿@inherits LayoutComponentBase
-
+@inject Microsoft.Extensions.Options.IOptions<BuildConfiguration.BuildInfo> BuildInfo
 <Layout Style="min-height: 100vh;">
     <Header Style="padding:0 25px;">
         <MainLayoutHeader />
     </Header>
     <Content Style="padding: 0.7em;">
-       @Body
+        @Body
     </Content>
+    <Footer Style="text-align: center; ">
+        <Tooltip Placement="@PlacementType.Top" Title="@BuildInfo.Value.Date.ToString("yyyy/MM/dd")">
+            v @BuildInfo.Value.BuildId
+        </Tooltip>
+    </Footer>
 </Layout>
 
 @code {
-    
+
 
 }

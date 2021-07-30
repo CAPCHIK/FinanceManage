@@ -5,7 +5,7 @@
 <AntList Bordered DataSource="chats" Loading="@(chats == null)">
     <ChildContent Context="item">
         <ListItem NoFlex="true">
-            <Row Justify="center">
+            <Row Justify="center" Align="middle">
                 <AntDesign.Col>
 
                     <Title Level="3">@item.ChatName</Title>
@@ -20,7 +20,7 @@
                             <NavLink href="@($"purchases/{item.ChatId}/edit")">
                                 <Button Size="large" Style="display: flex; align-items: center;">
                                     <Icon Type="edit" Theme="outline" />
-                                    Edit
+                                    Редактировать
                                 </Button>
                             </NavLink>
                         </SpaceItem>
@@ -28,11 +28,11 @@
                             <NavLink href="@($"purchases/{item.ChatId}")">
                                 <Button Size="large" Style="display: flex; align-items: center;">
                                     <Icon Type="area-chart" Theme="outline" />
-                                    Total
+                                    Графики
                                 </Button>
                             </NavLink>
                         </SpaceItem>
-
+@*
                         <SpaceItem>
                             <NavLink href="@($"weekStatistic/{item.ChatId}?&category=Compact")">
                                 <Button Size="large" Style="display: flex; align-items: center;">
@@ -40,7 +40,7 @@
                                     Per Week
                                 </Button>
                             </NavLink>
-                        </SpaceItem>
+                        </SpaceItem>*@
                     </Space>
                 </AntDesign.Col>
             </Row>

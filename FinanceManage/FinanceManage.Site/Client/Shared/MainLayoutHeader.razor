@@ -15,12 +15,12 @@
                 <Overlay>
                     <Menu>
                         <MenuItem>
-                            <Button OnClick="LogoutService.Logout">Log out</Button>
+                            <Button OnClick="LogoutService.Logout">Выйти</Button>
                         </MenuItem>
                     </Menu>
                 </Overlay>
                 <ChildContent>
-                    <Text Style="color: white; cursor: pointer;">Hello <b>@context.User.Identity.Name</b></Text>
+                    <Text Style="color: white; cursor: pointer;">Привет, <b>@context.User.Identity.Name</b></Text>
                 </ChildContent>
             </Dropdown>
 
@@ -35,7 +35,7 @@
         <Authorizing>
             <Row Justify="center">
                 <AntDesign.Col Span="24" Style=" display: flex; justify-content: center; align-items: center;">
-                    <Spin Spinning="true" Tip="Authenticating..." Size="medium" />
+                    <Spin Spinning="true" Tip="Авторизация..." Size="medium" />
                 </AntDesign.Col>
             </Row>
         </Authorizing>

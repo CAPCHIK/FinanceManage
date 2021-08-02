@@ -7,7 +7,7 @@
 {
     if (ex == null)
     {
-        <Spin Size="large" Style="margin: 0 100px;"/>
+        <Spin Size="large" Style="margin: 0 100px;" />
     }
     else
     {
@@ -61,13 +61,14 @@ else
                                                         {
                                                             <= 6 => 20,
                                                             _ => 14
-                                                        }).ToString());
+                                                        }).ToString())
+                            .Replace("<dateRange>", $"{result.From.ToString("MM.dd")} - {result.To.ToString("MM.dd")}");
         return conf;
     }
 
     readonly string jsConf = @"{
 statistic: {
-title: {formatter: (i) => i ? i.type : 'Всего'},
+title: {formatter: (i) => i ? i.type : '<dateRange>'},
 content: { style:{ fontSize: <fontSize>, }, },
 },
 meta: {

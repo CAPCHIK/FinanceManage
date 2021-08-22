@@ -107,6 +107,9 @@
         function onTelegramAuth(user) {
             window.authHandlerReference.invokeMethodAsync("UserAuthCallback", user);
         }
+        window.getLocalTimeOffset = function () {
+            return new Date().getTimezoneOffset();
+        }
     </script>
 </body>
 

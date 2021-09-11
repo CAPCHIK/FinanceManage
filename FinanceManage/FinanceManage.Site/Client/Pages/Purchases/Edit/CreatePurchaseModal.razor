@@ -1,0 +1,106 @@
+﻿@using System.ComponentModel.DataAnnotations
+
+@inject IMediator Mediator
+@inject IJSRuntime JS
+
+@{
+    RenderFragment footer =
+    @<Space>
+        <SpaceItem><Button Disabled="saving" OnClick="() => visible=false">Отмена</Button></SpaceItem>
+    </Space>;
+}
+
+<Modal Title="Новая запись"
+       Visible="visible"
+       Closable="false"
+       Footer="footer">
+
+    <Form Model="model"
+          OnFinish="SavePurchase"
+          ValidateOnChange
+          LabelColSpan="8"
+          WrapperColSpan="16"
+          Loading="saving">
+        <FormItem Label="Дата">
+            <Space>
+                <SpaceItem>
+                    <DatePicker ShowTime="true" @bind-Value="context.Date" />
+                </SpaceItem>
+                <SpaceItem>
+                    <Text>@dateTimeOffsetPrinter.ToString("zzz")</Text>
+                </SpaceItem>
+            </Space>
+        </FormItem>
+        <FormItem Label="Категория">
+            <AutoComplete TOption="string" @bind-Value="context.Category" Options="availableCategories"/>
+        </FormItem>
+        <FormItem Label="Цена">
+            <AntDesign.InputNumber @bind-Value="context.Price" />
+        </FormItem>
+        <FormItem WrapperColOffset="8" WrapperColSpan="16">
+            <Button HtmlType="submit" Type="@ButtonType.Primary">
+                Создать запись
+            </Button>
+        </FormItem>
+    </Form>
+
+</Modal>
+@code {
+
+    [Parameter]
+    public long ChatId { get; set; }
+
+    private bool visible = false;
+    private bool saving = false;
+    private DateTimeOffset dateTimeOffsetPrinter;
+    private TimeSpan dateTimeOffset;
+    private PurchaseEditModel model;
+    private Func<Task> onUpdate;
+
+    private List<string> availableCategories;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        var offset = await JS.InvokeAsync<int>("getLocalTimeOffset");
+        dateTimeOffset = TimeSpan.FromMinutes(-offset);
+        dateTimeOffsetPrinter = new DateTimeOffset(DateTime.Now, dateTimeOffset);
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        availableCategories = await Mediator.Send(new GetAvailableCategoriesForChat.Command(ChatId));
+    }
+
+    public void Show(Func<Task> onUpdate)
+    {
+        model = new PurchaseEditModel
+        {
+            Date = DateTime.Now,
+            Category = "",
+            Price = 0
+        };
+        this.onUpdate = onUpdate;
+        visible = true;
+        StateHasChanged();
+    }
+
+    private async Task SavePurchase()
+    {
+        saving = true;
+        StateHasChanged();
+
+        var success = await Mediator.Send(new SavePurchase.Command(
+            0,
+            model.Category.Trim(),
+            (float)Math.Round(model.Price, 2),
+            new DateTimeOffset(model.Date, dateTimeOffset),
+            ChatId));
+        await onUpdate();
+
+        saving = false;
+        visible = false;
+        StateHasChanged();
+    }
+}

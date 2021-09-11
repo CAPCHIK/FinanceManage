@@ -6,6 +6,11 @@
 @inject IMediator Mediator
 @inject NavigationManager NavigationManager
 
+<PageHeader Title="Покупки">
+    <PageHeaderExtra>
+        <Button Type="@ButtonType.Primary" OnClick="@(() => createPurchaseModal.Show(LoadData))">Создать запись</Button>
+    </PageHeaderExtra>
+</PageHeader>
 
 <Table DataSource="Purchases"
        Loading="data == null"
@@ -15,7 +20,6 @@
        PageSizeChanged="PageSizeChanged"
        PageIndexChanged="PageIndexChanged">
     <TitleTemplate>
-        <Text>Редактирование истории покупок</Text>
         <Search Placeholder="Поиск по категории" Size="@InputSize.Default" @bind-Value="@SearchText" OnPressEnter="OnSearch" />
     </TitleTemplate>
     <ChildContent>
@@ -31,6 +35,7 @@
         </ActionColumn>
     </ChildContent>
 </Table>
+<CreatePurchaseModal @ref="createPurchaseModal" ChatId="ChatId"/>
 <EditOnePurchaseModal @ref="editModal" />
 
 @code {
@@ -47,6 +52,7 @@
     private List<GetPurchases.Response> Purchases => data?.Items ?? new List<GetPurchases.Response>();
     private ListWrapper<GetPurchases.Response> data;
 
+    private CreatePurchaseModal createPurchaseModal;
     private EditOnePurchaseModal editModal;
 
     protected override async Task OnParametersSetAsync()

@@ -42,7 +42,7 @@ namespace FinanceManage.TelegramBot
                     services.AddDbContext<FinanceManageDbContext>(options =>
                         options.UseNpgsql(configuration.GetConnectionString("Database")));
 
-                    services.AddAutoMapper(typeof(Program).Assembly);
+                    services.AddAutoMapper(typeof(Program).Assembly, typeof(GetAverageSpendingPerDayHandler).Assembly);
 
                     services.AddMediatR(typeof(Program).Assembly, typeof(GetAverageSpendingPerDayHandler).Assembly);
 

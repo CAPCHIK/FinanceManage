@@ -20,7 +20,7 @@ namespace FinanceManage.Site.Client
         private readonly ILocalStorageService localStorage;
         private readonly IConfiguration configuration;
         private readonly HttpClient httpClient;
-        private bool saved;
+        private bool callbackReferenceSaved;
         public TelegramWidgetAuthenticationProvider(
             IJSRuntime jsRuntime,
             ILocalStorageService localStorage,
@@ -35,11 +35,11 @@ namespace FinanceManage.Site.Client
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            if (!saved)
+            if (!callbackReferenceSaved)
             {
                 var selfRef = DotNetObjectReference.Create(this);
                 await jsRuntime.InvokeVoidAsync("saveAuthReference", selfRef);
-                saved = true;
+                callbackReferenceSaved = true;
             }
             var principal = await GetPrincipal();
             return new AuthenticationState(principal);
@@ -65,9 +65,13 @@ namespace FinanceManage.Site.Client
                 }
                 else
                 {
-                    if (await TryLoginAsUser(telegramUserInfo))
+                    var (success, claims) = await TryGetInternalClaims(telegramUserInfo);
+                    if (success)
                     {
-                        return TelegramWidgetClaimsGenerator.GetPrincipal(telegramUserInfo);
+                        var tgIdentity = TelegramWidgetClaimsIdentityGenerator.GetIdentityForUserInfo(telegramUserInfo);
+                        var internalIdentity = new ClaimsIdentity(claims, InternalClaimConstants.IDENTITY_AUTH_TYPE);
+
+                        return new ClaimsPrincipal(new ClaimsIdentity[] { tgIdentity, internalIdentity });
                     }
                     else
                     {
@@ -77,14 +81,15 @@ namespace FinanceManage.Site.Client
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 Console.WriteLine("exception");
+                Console.WriteLine(ex);
                 return new ClaimsPrincipal();
             }
         }
 
-        private async Task<bool> TryLoginAsUser(TelegramUserInfo user)
+        private async Task<(bool, Claim[])> TryGetInternalClaims(TelegramUserInfo user)
         {
             var userInfoJson = JsonSerializer.Serialize(user);
             httpClient.DefaultRequestHeaders.Authorization =
@@ -95,9 +100,13 @@ namespace FinanceManage.Site.Client
             {
                 await localStorage.RemoveItemAsync("telegramUserInfo");
                 await localStorage.SetItemAsync("telegramUserInfo", user);
-                return true;
+
+                var responseText = await response.Content.ReadAsStringAsync();
+                var claimModels = JsonSerializer.Deserialize<ClaimModel[]>(responseText, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                var claims = claimModels.Select(c => new Claim(c.Type, c.Value)).ToArray();
+                return (true, claims);
             }
-            return false;
+            return (false, default);
         }
         [JSInvokable]
         public async Task UserAuthCallback(TelegramUserInfo userInfo)

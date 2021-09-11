@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -23,9 +24,14 @@ namespace FinanceManage.Site.Server.Controllers
         }
         [Authorize]
         [HttpPost]
-        public ActionResult CheckAuthData()
+        public ActionResult<ClaimModel[]> CheckInternalClaims ()
         {
-            return Ok(User.Identity.Name);
+            return User
+                .Identities
+                .Single(i => i.AuthenticationType == InternalClaimConstants.IDENTITY_AUTH_TYPE)
+                .Claims
+                .Select(c => new ClaimModel(c.Type, c.Value))
+                .ToArray();
         }
     }
 }

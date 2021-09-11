@@ -2,7 +2,7 @@ using AspNetCore.Proxy;
 using FinanceManage.CQRS.Handlers.Server;
 using FinanceManage.Database;
 using FinanceManage.Models.ServerSide.Options;
-using FinanceManage.Site.Server.AuthenticationHandlers;
+using FinanceManage.Site.Server.Authentication;
 using FinanceManage.Site.Shared;
 using FinanceManage.Telegram.Shared;
 using MediatR;
@@ -31,6 +31,7 @@ namespace FinanceManage.Site.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<TelegramBotOptions>(Configuration.GetSection(nameof(TelegramBotOptions)));
+            services.Configure<AdministrationOptions>(Configuration.GetSection(nameof(AdministrationOptions)));
             services.AddControllersWithViews();
             services.AddRazorPages();
 
@@ -50,6 +51,8 @@ namespace FinanceManage.Site.Server
             })
             .AddScheme<TelegramWidgetOptions, TelegramWidgetAuthenticationHandler>
                     (AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme, op => { });
+
+            services.AddSingleton<InternalClaimsIdentityGenerator>();
 
             if (IsNeedForwardingApi)
             {

@@ -16,21 +16,24 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Telegram.Bot.Extensions.LoginWidget;
 
-namespace FinanceManage.Site.Server.AuthenticationHandlers
+namespace FinanceManage.Site.Server.Authentication
 {
     public class TelegramWidgetOptions : AuthenticationSchemeOptions { }
     public class TelegramWidgetAuthenticationHandler : AuthenticationHandler<TelegramWidgetOptions>
     {
         private readonly IOptions<TelegramBotOptions> telegramBotOptions;
+        private readonly InternalClaimsIdentityGenerator internalClaimsIdentityGenerator;
 
         public TelegramWidgetAuthenticationHandler(
             IOptions<TelegramBotOptions> telegramBotOptions,
+            InternalClaimsIdentityGenerator internalClaimsIdentityGenerator,
             IOptionsMonitor<TelegramWidgetOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock) : base(options, logger, encoder, clock)
         {
             this.telegramBotOptions = telegramBotOptions;
+            this.internalClaimsIdentityGenerator = internalClaimsIdentityGenerator;
         }
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -86,8 +89,11 @@ namespace FinanceManage.Site.Server.AuthenticationHandlers
             {
                 return AuthenticateResult.Fail($"Incorrect telegram info: {authResult}");
             }
+            var tgIdentity = TelegramWidgetClaimsIdentityGenerator.GetIdentityForUserInfo(userInfo);
+            var internalPrincipal = internalClaimsIdentityGenerator.Generate(userInfo);
 
-            return AuthenticateResult.Success(new AuthenticationTicket(TelegramWidgetClaimsGenerator.GetPrincipal(userInfo), AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme));
+            var principal = new ClaimsPrincipal(new ClaimsIdentity[] { tgIdentity, internalPrincipal });
+            return AuthenticateResult.Success(new AuthenticationTicket(principal, AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme));
         }
 
         private static Dictionary<string, string> ReadUserInfoAsDictionary(TelegramUserInfo userInfo)

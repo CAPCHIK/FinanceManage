@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FinanceManage.Shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +13,8 @@ namespace FinanceManage.Models
 
         public string Title { get; set; }
         public string Description { get; set; }
+        public WalletType WalletType { get; set; }
+
 
         public long TelegramChatId { get; set; }
 

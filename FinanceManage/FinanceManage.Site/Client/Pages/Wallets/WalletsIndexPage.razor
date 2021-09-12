@@ -1,0 +1,19 @@
+﻿@page "/wallets/{ChatId:long}"
+@attribute [Authorize]
+
+<PageHeader Title="Кошельки">
+    <PageHeaderExtra>
+        <CreateWalletButton ChatId="ChatId"/>
+        <Button Type="@ButtonType.Primary">Обновить значения</Button>
+    </PageHeaderExtra>
+</PageHeader>
+
+<p>@ChatId</p>
+
+@code {
+    [Parameter]
+    public long ChatId { get; set; }
+
+
+
+}

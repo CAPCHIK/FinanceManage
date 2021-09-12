@@ -14,9 +14,9 @@ using static FinanceManage.CQRS.Queries.SavePurchase;
 
 namespace FinanceManage.CQRS.Handlers.Server
 {
-    public class CommandMapping : Profile
+    public class SavePurchaseMapping : Profile
     {
-        public CommandMapping()
+        public SavePurchaseMapping()
         {
             CreateMap<Command, Purchase>();
         }

@@ -23,9 +23,9 @@ namespace FinanceManage.Site.Server.Controllers
         }
 
         [HttpGet("getOverallChatsCount")]
-        public async Task<ActionResult<GetOverallChatsCount.Response>> GetOverallChatsCountAsync()
+        public async Task<ActionResult<GetOverallChatsCount.Response>> GetOverallChatsCountAsync(TimeSpan activeChatPeriod)
         {
-            var result = await mediator.Send(new GetOverallChatsCount.Command());
+            var result = await mediator.Send(new GetOverallChatsCount.Command(activeChatPeriod));
             return result;
         }
 

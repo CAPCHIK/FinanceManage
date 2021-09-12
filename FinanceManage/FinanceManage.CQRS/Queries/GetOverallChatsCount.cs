@@ -9,7 +9,7 @@ namespace FinanceManage.CQRS.Queries
 {
     public class GetOverallChatsCount
     {
-        public record Command() : IRequest<Response>;
-        public record Response(int ActiveChats, int TotalChats);
+        public record Command(TimeSpan ActiveChatPeriod) : IRequest<Response>;
+        public record Response(int ActiveChats, int TotalChats, long ActiveChatPeriodTicks);
     }
 }

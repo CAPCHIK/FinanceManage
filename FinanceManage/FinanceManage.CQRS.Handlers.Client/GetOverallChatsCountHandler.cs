@@ -27,7 +27,7 @@ namespace FinanceManage.CQRS.Handlers.Client
         {
             try
             {
-                string requestRow = $"/api/admin/getOverallChatsCount";
+                string requestRow = $"/api/admin/getOverallChatsCount?activeChatPeriod={request.ActiveChatPeriod}";
                 var response = await httpClient.GetFromJsonAsync<Response>(requestRow, cancellationToken: cancellationToken);
                 return response;
             }

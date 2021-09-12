@@ -30,8 +30,8 @@ namespace FinanceManage.CQRS.Handlers.Server
                 .GroupBy(p => new { p.TelegramChatId })
                 .Select(g => g.Max(p => p.Date))
                 .ToListAsync(cancellationToken: cancellationToken);
-            var latestDateForActive = DateTimeOffset.UtcNow - TimeSpan.FromDays(60);
-            return new Response(results.Where(r => r > latestDateForActive).Count(), results.Count);
+            var latestDateForActive = DateTimeOffset.UtcNow - request.ActiveChatPeriod;
+            return new Response(results.Where(r => r > latestDateForActive).Count(), results.Count, request.ActiveChatPeriod.Ticks);
         }
     }
 }

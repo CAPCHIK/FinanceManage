@@ -170,6 +170,13 @@ else
         var selected = categoriesCounts
              .Where(cc => cc.count <= middle)
              .ToDictionary(cc => cc.category, _ => false);
+        if (selected.Count == categoriesCounts.Count)
+        {
+            foreach (var key in selected.Keys)
+            {
+                selected[key] = true;
+            }
+        }
         return (allRecords, selected);
     }
 

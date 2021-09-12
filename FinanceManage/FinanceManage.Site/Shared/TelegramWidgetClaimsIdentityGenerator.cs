@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace FinanceManage.Site.Shared
 {
-    public static class TelegramWidgetClaimsGenerator
+    public static class TelegramWidgetClaimsIdentityGenerator
     { 
-        public static ClaimsPrincipal GetPrincipal(TelegramUserInfo userInfo)
+        public static ClaimsIdentity GetIdentityForUserInfo(TelegramUserInfo userInfo)
         {
             var claims = new[] {
                     new Claim(ClaimTypes.NameIdentifier, userInfo.Id.ToString()),
@@ -19,8 +19,7 @@ namespace FinanceManage.Site.Shared
                     new Claim(ClaimTypes.DateOfBirth, userInfo.AuthDate.ToString())
             };
 
-            var claimsIdentity = new ClaimsIdentity(claims, nameof(TelegramWidgetClaimsGenerator));
-            return new ClaimsPrincipal(claimsIdentity);
+            return new ClaimsIdentity(claims, nameof(TelegramWidgetClaimsIdentityGenerator));
         }
     }
 }

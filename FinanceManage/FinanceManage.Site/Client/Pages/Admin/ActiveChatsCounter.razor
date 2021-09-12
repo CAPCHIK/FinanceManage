@@ -1,0 +1,14 @@
+﻿@inject IMediator Mediator
+<Statistic Title="Количество чатов" Value="result?.ActiveChats ?? -1" Suffix="@($"/ {result?.TotalChats.ToString() ?? "?"}")" />
+
+@code { 
+    
+    private GetOverallChatsCount.Response result;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        this.result = await Mediator.Send(new GetOverallChatsCount.Command());
+    }
+
+}

@@ -1,19 +1,63 @@
 ﻿@page "/wallets/{ChatId:long}"
 @attribute [Authorize]
 
+@inject IMediator Mediator
+
 <PageHeader Title="Кошельки">
     <PageHeaderExtra>
-        <CreateWalletButton ChatId="ChatId"/>
+        <CreateWalletButton ChatId="ChatId" />
         <Button Type="@ButtonType.Primary">Обновить значения</Button>
     </PageHeaderExtra>
 </PageHeader>
 
-<p>@ChatId</p>
+<AntList DataSource="wallets"
+         Loading="loading"
+         Bordered>
+    <ListItem>
+        <ChildContent>
+
+            <ListItemMeta Description="@context.Description">
+                <AvatarTemplate>
+                    <Statistic Value="@(context.Balance?.ToString() ?? "~")" Suffix="₽" />
+                </AvatarTemplate>
+
+                <TitleTemplate>
+                    <NavLink>@context.Title</NavLink>
+                </TitleTemplate>
+            </ListItemMeta>
+        </ChildContent>
+        <Extra>
+            <Button><Icon Type="edit" Theme="outline" /></Button>
+        </Extra>
+
+    </ListItem>
+</AntList>
+
 
 @code {
     [Parameter]
     public long ChatId { get; set; }
 
+    private List<GetWallets.ResponseObject> wallets;
+    private bool loading = true;
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadList();
+    }
 
+    private async Task LoadList()
+    {
+        loading = true;
+        try
+        {
+            wallets = await Mediator.Send(new GetWallets.Query(ChatId));
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
 }

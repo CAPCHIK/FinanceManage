@@ -2,109 +2,39 @@
 @using FinanceManage.CQRS.Commands
 @using FinanceManage.Shared
 @inject IMediator Mediator
-@inject IJSRuntime JS
-<Button OnClick="ShowModal">Создать кошелек</Button>
 
-@{
-    RenderFragment footer =
-    @<Space>
-        <SpaceItem><Button Disabled="saving" OnClick="() => visible=false">Отмена</Button></SpaceItem>
-    </Space>
-    ;
-}
+<WorkWithWalletModal @ref="modal"
+                     Title="Новый кошелёк"
+                     FormSubmitText="Создать кошелёк"
+                     Error="(() => Error)"
+                     OpenModal="(() => new WorkWithWalletModal.WalletEditModel())"
+                     CleanError="CleanError"
+                     PrimaryButtonAction="PrimaryButtonAction" />
 
-<Modal Title="Новый кошелёк"
-       Visible="visible"
-       Closable="false"
-       Footer="footer"
-       ConfirmLoading="saving">
-    @if (error != null)
-    {
-        <Result Status="error"
-            Title="@ErrorText">
-            <Extra>
-                <Button OnClick="@(() => error = null)">Попробовать снова</Button>
-            </Extra>
-        </Result>
-    }
-    else
-    {
-        <Form Model="model"
-          OnFinish="Create"
-          ValidateOnChange
-          LabelColSpan="8"
-          WrapperColSpan="16"
-          Loading="saving"
-          id="create_wallet_form">
-            <FormItem Label="Название">
-                <Input @bind-Value="context.Title" />
-            </FormItem>
-            <FormItem Label="Описание">
-                <Input @bind-Value="context.Description" />
-            </FormItem>
-            <FormItem Label="Тип">
-                <RadioGroup @bind-Value="@context.WalletType">
-                    <Radio RadioButton Value="@WalletType.Passive">Пассив</Radio>
-                    <Radio RadioButton Value="@WalletType.Active">Актив</Radio>
-                </RadioGroup>
-            </FormItem>
-            <FormItem WrapperColOffset="8" WrapperColSpan="16">
-                <Button HtmlType="submit" Type="@ButtonType.Primary">
-                    Создать кошелёк
-                </Button>
-            </FormItem>
-        </Form>
-    }
-</Modal>
-
+<Button OnClick="() => modal.ShowModal()">Создать кошелек</Button>
 @code {
     [Parameter]
     public long ChatId { get; set; }
 
-    private bool visible = false;
-    private bool saving = false;
-    private WalletEditModel model;
+    private WorkWithWalletModal modal;
 
+    private void CleanError()
+    {
+        error = null;
+    }
     private CreateWallet.ErrorReason? error;
 
-    private string ErrorText => error switch
+    private (string errorType, string errorText)? Error => error switch
     {
-        CreateWallet.ErrorReason.TitleExists => "Название кошелька уже занято",
-        _ => "Непредвиденная ошибка"
+        CreateWallet.ErrorReason.TitleExists => ("warning", "Название кошелька уже занято"),
+        null => null,
+        _ => ("error", "Непредвиденная ошибка")
     };
 
-    private async Task Create()
+    private async Task PrimaryButtonAction(WorkWithWalletModal.WalletEditModel walletModel)
     {
-        var result = await Mediator.Send(new CreateWallet.Command(model.Title, model.Description, model.WalletType, ChatId));
-        await JS.InvokeVoidAsync("console.log", result);
-        if (result.Error == null)
-        {
-            visible = false;
-        }
-        else
-        {
-            error = result.Error;
-        }
-    }
-
-    private void ShowModal()
-    {
-        model = new WalletEditModel();
-        visible = true;
-    }
-
-    class WalletEditModel
-    {
-        private string title;
-        [Required]
-        [MaxLength(50)]
-        public string Title { get => title; set { title = value?.Trim(); } }
-        private string description;
-        
-        [MaxLength(100)]
-        public string Description { get => description; set { description = value?.Trim(); } }
-        [Required]
-        public WalletType WalletType { get; set; }
+        var result = await Mediator.Send(new CreateWallet.Command(walletModel.Title, walletModel.Description, walletModel.WalletType, ChatId));
+        error = result.Error;
     }
 
 }

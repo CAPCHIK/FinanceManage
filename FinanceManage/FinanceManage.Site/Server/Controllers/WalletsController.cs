@@ -24,6 +24,21 @@ namespace FinanceManage.Site.Server.Controllers
             this.mediator = mediator;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<List<GetWallets.ResponseObject>>> GetWallets(long chatId)
+        {
+            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userHasAccess = await mediator.Send(
+               new GetUserHasAccessToChat.Command(userId, chatId));
+
+            if (!userHasAccess)
+            {
+                return Forbid();
+            }
+
+            return await mediator.Send(new GetWallets.Query(chatId));
+        }
+
         [HttpPost]
         public async Task<ActionResult<CreateWallet.Result>> CreateWallet(
             long chatId,

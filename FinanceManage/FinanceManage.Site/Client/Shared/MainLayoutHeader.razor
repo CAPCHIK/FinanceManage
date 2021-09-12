@@ -14,7 +14,9 @@
                         @if (context.User.HasClaim(InternalClaimConstants.SYSTEM_ADMIN_CLAIM_TYPE, ""))
                         {
                             <MenuItem>
-                                <Button >Страница администратора</Button>
+                                <NavLink href="admin">
+                                    <Button>Страница администратора</Button>
+                                </NavLink>
                             </MenuItem>
                         }
                         <MenuItem>

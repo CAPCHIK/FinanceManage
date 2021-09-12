@@ -52,6 +52,8 @@ namespace FinanceManage.Site.Server
             .AddScheme<TelegramWidgetOptions, TelegramWidgetAuthenticationHandler>
                     (AuthenticationSchemeConstants.TelegramWidgetAuthenticationScheme, op => { });
 
+            services.AddAuthorizationCore(options => options.AddFinanceManagePolicies());
+
             services.AddSingleton<InternalClaimsIdentityGenerator>();
 
             if (IsNeedForwardingApi)

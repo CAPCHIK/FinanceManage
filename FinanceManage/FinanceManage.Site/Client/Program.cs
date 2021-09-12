@@ -2,6 +2,7 @@ using Blazored.LocalStorage;
 using BuildConfiguration;
 using FinanceManage.CQRS.Handlers.Client;
 using FinanceManage.Site.Client.Models.Options;
+using FinanceManage.Site.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -34,7 +35,7 @@ namespace FinanceManage.Site.Client
 
 
             builder.Services.AddScoped<AuthenticationStateProvider, TelegramWidgetAuthenticationProvider>();
-            builder.Services.AddAuthorizationCore();
+            builder.Services.AddAuthorizationCore(options => options.AddFinanceManagePolicies());
             builder.Services.AddScoped<ILogoutService>(sp => sp.GetRequiredService<AuthenticationStateProvider>() as TelegramWidgetAuthenticationProvider);
 
             await builder.Build().RunAsync();

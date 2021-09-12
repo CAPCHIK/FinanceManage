@@ -1,6 +1,5 @@
 ﻿@inject ILogoutService LogoutService
 
-
 <div style="display: flex; justify-content:space-between;">
 
     <NavLink href="">
@@ -9,9 +8,17 @@
 
     <AuthorizeView>
         <Authorized>
-            <Dropdown>
+            <Dropdown Placement="@PlacementType.BottomRight">
                 <Overlay>
                     <Menu>
+                        @if (context.User.HasClaim(InternalClaimConstants.SYSTEM_ADMIN_CLAIM_TYPE, ""))
+                        {
+                            <MenuItem>
+                                <NavLink href="admin">
+                                    <Button>Страница администратора</Button>
+                                </NavLink>
+                            </MenuItem>
+                        }
                         <MenuItem>
                             <Button OnClick="LogoutService.Logout">Выйти</Button>
                         </MenuItem>

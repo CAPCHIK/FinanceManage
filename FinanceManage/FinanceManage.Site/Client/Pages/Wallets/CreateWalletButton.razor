@@ -15,7 +15,9 @@
 @code {
     [Parameter]
     public long ChatId { get; set; }
-
+    [Parameter]
+    public EventCallback WalletCreated { get; set; }
+    
     private WorkWithWalletModal modal;
 
     private void CleanError()
@@ -35,6 +37,10 @@
     {
         var result = await Mediator.Send(new CreateWallet.Command(walletModel.Title, walletModel.Description, walletModel.WalletType, ChatId));
         error = result.Error;
+        if (!error.HasValue)
+        {
+            await WalletCreated.InvokeAsync();
+        }
     }
 
 }

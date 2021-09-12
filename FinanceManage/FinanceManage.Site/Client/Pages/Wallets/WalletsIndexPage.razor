@@ -1,33 +1,41 @@
 ﻿@page "/wallets/{ChatId:long}"
+@using FinanceManage.Shared
 @attribute [Authorize]
 
 @inject IMediator Mediator
 
 <PageHeader Title="Кошельки">
     <PageHeaderExtra>
-        <CreateWalletButton ChatId="ChatId" />
+        <CreateWalletButton ChatId="ChatId" WalletCreated="LoadList" />
         <Button Type="@ButtonType.Primary">Обновить значения</Button>
     </PageHeaderExtra>
 </PageHeader>
 
+@{
+    RenderFragment<WalletType> walletTypeText = type => type switch
+    {
+        WalletType.Active => @<Text>Актив</Text>,
+        WalletType.Passive => @<Text>Пассив</Text>,
+        _ => @<Text>Неизвестный тип</text>
+    };
+}
+
 <AntList DataSource="wallets"
          Loading="loading"
          Bordered>
-    <ListItem>
+    <ListItem Actions="@(new[] { walletTypeText(context.WalletType) })">
         <ChildContent>
-
-            <ListItemMeta Description="@context.Description">
-                <AvatarTemplate>
-                    <Statistic Value="@(context.Balance?.ToString() ?? "~")" Suffix="₽" />
-                </AvatarTemplate>
-
-                <TitleTemplate>
-                    <NavLink>@context.Title</NavLink>
-                </TitleTemplate>
-            </ListItemMeta>
+                <ListItemMeta Description="@context.Description">
+                    <AvatarTemplate>
+                        <Statistic Value="@(context.Balance?.ToString() ?? "~")" Suffix="₽" />
+                    </AvatarTemplate>
+                    <TitleTemplate>
+                        <NavLink>@context.Title</NavLink>
+                    </TitleTemplate>
+                </ListItemMeta>
         </ChildContent>
         <Extra>
-            <Button><Icon Type="edit" Theme="outline" /></Button>
+            <EditWalletButton Wallet="context" WalletUpdated="LoadList"/>
         </Extra>
 
     </ListItem>

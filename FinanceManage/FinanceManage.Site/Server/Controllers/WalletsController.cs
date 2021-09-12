@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FinanceManage.Site.Server.Controllers
 {
-    [Route("api/[controller]/{chatId:long}")]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
     public class WalletsController : ControllerBase
@@ -24,7 +24,7 @@ namespace FinanceManage.Site.Server.Controllers
             this.mediator = mediator;
         }
 
-        [HttpGet]
+        [HttpGet("{chatId:long}")]
         public async Task<ActionResult<List<GetWallets.ResponseObject>>> GetWallets(long chatId)
         {
             var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
@@ -39,7 +39,23 @@ namespace FinanceManage.Site.Server.Controllers
             return await mediator.Send(new GetWallets.Query(chatId));
         }
 
-        [HttpPost]
+        [HttpPut("{walletId:guid}")]
+        public async Task<ActionResult<EditWallet.Result>> UpdateWallet(Guid walletId, [FromBody]EditWallet.Command command)
+        {
+            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userHasAccess = await mediator.Send(
+               new GetUserHasAccessToWallet.Command(userId, walletId));
+
+            if (!userHasAccess)
+            {
+                return Forbid();
+            }
+
+            return await mediator.Send(command with { WalletId = walletId });
+        }
+
+
+        [HttpPost("{chatId:long}")]
         public async Task<ActionResult<CreateWallet.Result>> CreateWallet(
             long chatId,
             [FromBody] CreateWallet.Command command)

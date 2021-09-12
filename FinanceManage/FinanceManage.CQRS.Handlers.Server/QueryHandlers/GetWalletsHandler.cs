@@ -25,7 +25,8 @@ namespace FinanceManage.CQRS.Handlers.Server
             var wallets = await dbContext
                .Wallets
                .Where(w => w.TelegramChatId == request.TelegramChatId)
-               .Select(w => new ResponseObject(w.Id, w.Title, w.Description, w.History.Max(wh => wh.Sum)))
+               .OrderBy(w => w.Title)
+               .Select(w => new ResponseObject(w.Id, w.Title, w.Description, w.WalletType, w.History.Max(wh => wh.Sum)))
                .ToListAsync();
             return wallets;
         }

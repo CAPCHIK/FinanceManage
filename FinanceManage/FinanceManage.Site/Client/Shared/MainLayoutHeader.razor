@@ -8,7 +8,7 @@
 
     <AuthorizeView>
         <Authorized>
-            <Dropdown Placement="@PlacementType.BottomRight">
+            <Dropdown Placement="@Placement.BottomRight">
                 <Overlay>
                     <Menu>
                         @if (context.User.HasClaim(InternalClaimConstants.SYSTEM_ADMIN_CLAIM_TYPE, ""))

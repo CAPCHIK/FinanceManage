@@ -15,7 +15,7 @@
 }
 else if (ex is not null)
 {
-    <Tooltip Title="@($"{ex.GetType().FullName} : {ex.Message}")" Placement="@PlacementType.Bottom">
+    <Tooltip Title="@($"{ex.GetType().FullName} : {ex.Message}")" Placement="@Placement.Bottom">
         <AntDesign.Text>Непредвиденная ошибка. Пожалуйста, попробуйте позже.</AntDesign.Text>
     </Tooltip>
 }

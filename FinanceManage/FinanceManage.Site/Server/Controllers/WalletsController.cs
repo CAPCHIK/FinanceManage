@@ -1,5 +1,6 @@
 ﻿using FinanceManage.CQRS.Commands;
 using FinanceManage.CQRS.Queries;
+using FinanceManage.Site.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +28,7 @@ namespace FinanceManage.Site.Server.Controllers
         [HttpGet("{chatId:long}")]
         public async Task<ActionResult<List<GetWallets.ResponseObject>>> GetWallets(long chatId)
         {
-            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = User.GetUserId();
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToChat.Command(userId, chatId));
 
@@ -42,7 +43,7 @@ namespace FinanceManage.Site.Server.Controllers
         [HttpPut("{walletId:guid}")]
         public async Task<ActionResult<EditWallet.Result>> UpdateWallet(Guid walletId, [FromBody]EditWallet.Command command)
         {
-            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = User.GetUserId();
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToWallet.Command(userId, walletId));
 
@@ -60,7 +61,7 @@ namespace FinanceManage.Site.Server.Controllers
             long chatId,
             [FromBody] CreateWallet.Command command)
         {
-            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = User.GetUserId();
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToChat.Command(userId, chatId));
 
@@ -77,7 +78,7 @@ namespace FinanceManage.Site.Server.Controllers
             long chatId,
             [FromBody] SaveWalletBalances.Command command)
         {
-            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = User.GetUserId();
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToChat.Command(userId, chatId));
 

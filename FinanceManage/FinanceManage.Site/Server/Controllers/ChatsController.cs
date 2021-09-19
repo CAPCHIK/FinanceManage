@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using FinanceManage.Site.Shared;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -26,8 +27,7 @@ namespace FinanceManage.Site.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Response>>> Get()
         {
-            var chatsList = await mediator.Send(
-               new Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value)));
+            var chatsList = await mediator.Send(new Command(User.GetUserId()));
 
             return chatsList;
         }

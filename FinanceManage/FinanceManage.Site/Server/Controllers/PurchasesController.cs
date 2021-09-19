@@ -1,4 +1,5 @@
 ﻿using FinanceManage.CQRS.Queries;
+using FinanceManage.Site.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,7 @@ namespace FinanceManage.Site.Server.Controllers
             [FromQuery] GetPurchases.Command command)
         {
             var userHasAccess = await mediator.Send(
-               new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), chatId));
+               new GetUserHasAccessToChat.Command(User.GetUserId(), chatId));
 
             if (!userHasAccess)
             {
@@ -43,7 +44,7 @@ namespace FinanceManage.Site.Server.Controllers
             [FromRoute] long chatId,
             [FromBody] SavePurchase.Command command)
         {
-            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userId = User.GetUserId();
             var userHasAccess = await mediator.Send(
                new GetUserHasAccessToChat.Command(userId, chatId));
 
@@ -61,7 +62,7 @@ namespace FinanceManage.Site.Server.Controllers
             [FromBody] UpdatePurchase.Command command)
         {
             var userHasAccess = await mediator.Send(
-               new GetUserHasAccessToPurchase.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), purchaseId));
+               new GetUserHasAccessToPurchase.Command(User.GetUserId(), purchaseId));
 
             if (!userHasAccess)
             {
@@ -75,7 +76,7 @@ namespace FinanceManage.Site.Server.Controllers
         public async Task<ActionResult<List<string>>> GetCategories(long chatId)
         {
             var userHasAccess = await mediator.Send(
-               new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), chatId));
+               new GetUserHasAccessToChat.Command(User.GetUserId(), chatId));
 
             if (!userHasAccess)
             {

@@ -25,7 +25,8 @@ else
     [Parameter]
     public long ChatId { get; set; }
 
-    private AverageSpending.Result result;
+    private List<GetWallets.ResponseObject> result;
+        private float totalSum;
     private record DataItem(string type, float value);
     private List<DataItem> data;
     private Exception ex;
@@ -37,8 +38,9 @@ else
             try
             {
                 var now = DateTimeOffset.UtcNow;
-                result = await Mediator.Send(new AverageSpending.Command(now.AddDays(-29), now, ChatId, AverageSpending.CategoryMode.Compact));
-                data = result.ByCategory.Select(kvp => new DataItem(kvp.Key, kvp.Value)).ToList();
+                result = await Mediator.Send(new GetWallets.Query(ChatId));
+                data = result.Select(w => new DataItem(w.Title, w.Balance.GetValueOrDefault(0))).ToList();
+                totalSum = result.Sum(w => w.Balance.GetValueOrDefault(0));
             }
             catch (Exception ex)
             {
@@ -57,18 +59,17 @@ else
         var baseConf = jsConf;
         var conf = baseConf.Replace("<fontSize>", result == null ?
                                                         14.ToString() :
-                                                        (result.Sum.ToString().Length switch
+                                                        (totalSum.ToString().Length switch
                                                         {
                                                             <= 6 => 20,
                                                             _ => 14
-                                                        }).ToString())
-                            .Replace("<dateRange>", $"{result.From.ToString("MM.dd")} - {result.To.ToString("MM.dd")}");
+                                                        }).ToString());
         return conf;
     }
 
     readonly string jsConf = @"{
 statistic: {
-title: {formatter: (i) => i ? i.type : '<dateRange>'},
+title: {formatter: (i) => i ? i.type : 'Всего'},
 content: { style:{ fontSize: <fontSize>, }, },
 },
 meta: {
@@ -101,8 +102,6 @@ end: [
 },
 ]
 }";
-
-
     readonly PieConfig config1 = new PieConfig
     {
         ForceFit = true,

@@ -3,15 +3,17 @@ using System;
 using FinanceManage.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace FinanceManage.Database.Migrations
 {
     [DbContext(typeof(FinanceManageDbContext))]
-    partial class FinanceManageDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210802175000_Wallets")]
+    partial class Wallets
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -78,13 +80,7 @@ namespace FinanceManage.Database.Migrations
                     b.Property<string>("Title")
                         .HasColumnType("text");
 
-                    b.Property<int>("WalletType")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("Title", "TelegramChatId")
-                        .IsUnique();
 
                     b.ToTable("Wallets");
                 });

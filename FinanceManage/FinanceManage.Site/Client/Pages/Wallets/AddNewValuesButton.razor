@@ -1,0 +1,148 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using FinanceManage.CQRS.Commands
+@inject IJSRuntime JS;
+@inject IMediator Mediator;
+@inject NotificationService _notice;
+
+
+<Button Type="@ButtonType.Primary" OnClick="() => ShowModal()" Loading="@(Wallets == null)">Обновить значения</Button>
+@{
+    RenderFragment footer =
+    @<Space>
+        <SpaceItem><Button Disabled="saving" OnClick="() => visible=false">Отмена</Button></SpaceItem>
+    </Space>
+    ;
+}
+<Modal Title="Обновление баланса"
+       Visible="visible"
+       Closable="false"
+       Footer="footer"
+       ConfirmLoading="saving">
+    <Form Model="model"
+          LabelColSpan="8"
+          WrapperColSpan="16"
+          OnFinish="CreateRecord"
+          Loading="saving">
+        <FormItem Label="Дата">
+            <Space>
+                <SpaceItem>
+                    <DatePicker ShowTime="true" @bind-Value="context.Date" />
+                </SpaceItem>
+                <SpaceItem>
+                    <Text>@dateTimeOffsetPrinter.ToString("zzz")</Text>
+                </SpaceItem>
+            </Space>
+        </FormItem>
+        @foreach (var walletItem in context.Values)
+        {
+            <FormItem Label="@walletItem.WalletTitle">
+                <AntDesign.InputNumber Min="0" Max="float.MaxValue" @bind-Value="walletItem.Value" />
+                <Text>₽</Text>
+            </FormItem>
+        }
+        <FormItem WrapperColOffset="8" WrapperColSpan="16">
+            <Button HtmlType="submit" Type="@ButtonType.Primary">
+                Обновить баланс
+            </Button>
+        </FormItem>
+    </Form>
+
+</Modal>
+
+@code {
+
+
+    [Parameter]
+    public List<GetWallets.ResponseObject> Wallets { get; set; }
+    [Parameter]
+    public long TelegramChatId { get; set; }
+    [Parameter]
+    public int TelegramUserId { get; set; }
+    [Parameter]
+    public EventCallback BalanceUpdated { get; set; }
+    private bool visible = false;
+    private bool saving = false;
+    private DateTimeOffset dateTimeOffsetPrinter;
+
+
+    private UpdateValuesModal model;
+
+
+    public void ShowModal()
+    {
+        model = new UpdateValuesModal
+            {
+                Date = DateTime.Now,
+                Values = Wallets.Select(w => new NewWalletValue
+                {
+                    Id = w.Id,
+                    WalletTitle = w.Title,
+                    Value = w.Balance.HasValue ? w.Balance.Value : 0
+                })
+                                            .ToList()
+            };
+        visible = true;
+    }
+
+
+    private async Task CreateRecord()
+    {
+        saving = true;
+        try
+        {
+            var result = await Mediator.Send(new SaveWalletBalances.Command(
+                TelegramChatId,
+                TelegramUserId,
+                new DateTimeOffset(model.Date, dateTimeOffsetPrinter.Offset),
+                model.Values.Select(mv => new SaveWalletBalances.WalletBalance(mv.Id, mv.Value)).ToList()));
+            if (result.ErrorReason.HasValue)
+            {
+                var errorText = result.ErrorReason.Value switch
+                {
+                    SaveWalletBalances.ErrorReason.DublicateWallets => "Попытка отправить баланс одного кошелька дважды.",
+                    SaveWalletBalances.ErrorReason.NotAllWalletsFilled => "Необходимо заполнить значения для всех кошельков. Попробуйте обновить страницу.",
+                    _ => "Непредвиденная ошибка"
+                };
+                await _notice.Open(new NotificationConfig()
+                    {
+                        Message = "Ошибка при сохранении баланса",
+                        Description = errorText,
+                        NotificationType = NotificationType.Error
+                    });
+            }
+            else
+            {
+                await BalanceUpdated.InvokeAsync();
+                visible = false;
+            }
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            var offset = await JS.InvokeAsync<int>("getLocalTimeOffset");
+            var dateTimeOffset = TimeSpan.FromMinutes(-offset);
+            dateTimeOffsetPrinter = new DateTimeOffset(DateTime.Now, dateTimeOffset);
+        }
+    }
+
+    private class UpdateValuesModal
+    {
+        public DateTime Date { get; set; }
+        public List<NewWalletValue> Values { get; set; }
+    }
+    private class NewWalletValue
+    {
+        public Guid Id { get; set; }
+        public string WalletTitle { get; set; }
+        [Range(0, float.MaxValue)]
+        public float Value { get; set; }
+    }
+}

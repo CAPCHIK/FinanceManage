@@ -34,31 +34,44 @@ else
             <ListItem NoFlex="true">
                 <Row Justify="center" Align="middle">
                     <AntDesign.Col>
-
-                        <Title Level="3">@item.ChatName</Title>
+                        <Title Level="2">@item.ChatName</Title>
                     </AntDesign.Col>
-                    <AntDesign.Col>
+                </Row>
+                <Row Justify="center" Align="middle">
+                    <AntDesign.Col Lg="12" Sm="24">
+                        <Title Level="3" Style="text-align: center">Расходы</Title>
                         <FinanceManage.Site.Client.Pages.Purchases.MonthForChatPie ChatId="item.ChatId" />
-                    </AntDesign.Col>
-                    <AntDesign.Col>
-                        <Space>
-                            <SpaceItem>
+                        <Row Justify="center" Gutter="16">
+                            <AntDesign.Col>
                                 <NavLink href="@($"purchases/{item.ChatId}/edit")">
                                     <Button Size="large" Style="display: flex; align-items: center;">
                                         <Icon Type="edit" Theme="outline" />
                                         Редактировать
                                     </Button>
                                 </NavLink>
-                            </SpaceItem>
-                            <SpaceItem>
+                            </AntDesign.Col>
+                            <AntDesign.Col>
                                 <NavLink href="@($"purchases/{item.ChatId}")">
                                     <Button Size="large" Style="display: flex; align-items: center;">
                                         <Icon Type="area-chart" Theme="outline" />
                                         Графики
                                     </Button>
                                 </NavLink>
-                            </SpaceItem>
-                        </Space>
+                            </AntDesign.Col>
+                        </Row>
+                    </AntDesign.Col>
+                    <AntDesign.Col Lg="12" Sm="24">
+                        <Title Level="3" Style="text-align: center">Состояние</Title>
+                        <FinanceManage.Site.Client.Pages.Wallets.BalancesPie ChatId="item.ChatId" />
+                        <Row Justify="center" Gutter="16">
+                            <AntDesign.Col>
+                                <NavLink href="@($"wallets/{item.ChatId}")">
+                                    <Button Size="large" Style="display: flex; align-items: center;" Icon="@IconType.Outline.Wallet">
+                                        Кошельки
+                                    </Button>
+                                </NavLink>
+                            </AntDesign.Col>
+                        </Row>
                     </AntDesign.Col>
                 </Row>
             </ListItem>

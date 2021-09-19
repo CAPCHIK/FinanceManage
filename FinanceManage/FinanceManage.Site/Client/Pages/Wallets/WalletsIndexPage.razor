@@ -1,0 +1,77 @@
+﻿@page "/wallets/{ChatId:long}"
+@using FinanceManage.Shared
+@attribute [Authorize]
+
+@inject IMediator Mediator
+<PageHeader Title="Кошельки">
+    <PageHeaderExtra>
+        <CreateWalletButton ChatId="ChatId" WalletCreated="LoadList" />
+        <AuthorizeView>
+            <Authorized>
+                <AddNewValuesButton Wallets="wallets" 
+                TelegramChatId="ChatId" 
+                TelegramUserId="context.User.GetUserId()"
+                BalanceUpdated="LoadList"/>
+            </Authorized>
+        </AuthorizeView>
+</PageHeaderExtra>
+</PageHeader>
+
+@{
+    RenderFragment<WalletType> walletTypeText = type => type switch
+    {
+        WalletType.Active => @<Text>Актив</Text>,
+        WalletType.Passive => @<Text>Пассив</Text>,
+        _ => @<Text>Неизвестный тип</text>
+    };
+}
+
+<AntList DataSource="wallets"
+         Loading="loading"
+         Bordered>
+    <ListItem Actions="@(new[] { walletTypeText(context.WalletType) })">
+        <ChildContent>
+                <ListItemMeta Description="@context.Description">
+                    <AvatarTemplate>
+                        <Statistic Value="@(context.Balance?.ToString() ?? "~")" Suffix="₽" />
+                    </AvatarTemplate>
+                    <TitleTemplate>
+                        <NavLink>@context.Title</NavLink>
+                    </TitleTemplate>
+                </ListItemMeta>
+        </ChildContent>
+        <Extra>
+            <EditWalletButton Wallet="context" WalletUpdated="LoadList"/>
+        </Extra>
+
+    </ListItem>
+</AntList>
+
+
+@code {
+    [Parameter]
+    public long ChatId { get; set; }
+
+    private List<GetWallets.ResponseObject> wallets;
+    private bool loading = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadList();
+    }
+
+    private async Task LoadList()
+    {
+        loading = true;
+        try
+        {
+            wallets = await Mediator.Send(new GetWallets.Query(ChatId));
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}

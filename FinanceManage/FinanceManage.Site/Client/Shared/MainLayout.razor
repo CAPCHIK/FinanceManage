@@ -4,11 +4,11 @@
     <Header Style="padding:0 25px;">
         <MainLayoutHeader />
     </Header>
-    <Content Style="padding: 0.7em;">
+    <Content Style="padding: 0.7em; background-color: #fff">
         @Body
     </Content>
     <Footer Style="text-align: center; ">
-        <Tooltip Placement="@PlacementType.Top" Title="@BuildInfo.Value.Date.ToString("yyyy/MM/dd")">
+        <Tooltip Placement="@Placement.Top" Title="@BuildInfo.Value.Date.ToString("yyyy/MM/dd")">
             v @BuildInfo.Value.BuildId
         </Tooltip>
     </Footer>

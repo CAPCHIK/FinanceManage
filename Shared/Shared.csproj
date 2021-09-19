@@ -2,10 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+    <RootNamespace>FinanceManage.Shared</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Shared\Shared.csproj" />
-  </ItemGroup>
 
 </Project>

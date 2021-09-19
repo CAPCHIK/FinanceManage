@@ -1,0 +1,52 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using FinanceManage.CQRS.Commands
+@using FinanceManage.Shared
+@inject IMediator Mediator
+
+<WorkWithWalletModal @ref="modal"
+                     Title="Изменение кошелёк"
+                     FormSubmitText="Изменить кошелёк"
+                     Error="(() => Error)"
+                     OpenModal="(GetModel)"
+                     CleanError="CleanError"
+                     PrimaryButtonAction="EditWalletAction" />
+<Button OnClick="() => modal.ShowModal()"><Icon Type="edit" Theme="outline" /></Button>
+@code {
+    [Parameter]
+    public GetWallets.ResponseObject Wallet { get; set; }
+    [Parameter]
+    public EventCallback WalletUpdated { get; set; }
+    private WorkWithWalletModal modal;
+
+    private void CleanError()
+    {
+        error = null;
+    }
+    private EditWallet.ErrorReason? error;
+
+    private (string errorType, string errorText)? Error => error switch
+    {
+        EditWallet.ErrorReason.NotFound => ("404", "Кошелёк не найден"),
+        EditWallet.ErrorReason.TitleExists => ("warning", "Название кошелька уже занято"),
+        null => null,
+        _ => ("error", "Непредвиденная ошибка")
+    };
+
+    private WorkWithWalletModal.WalletEditModel GetModel() => new WorkWithWalletModal.WalletEditModel
+    {
+        Title = Wallet.Title,
+        Description = Wallet.Description,
+        WalletType = Wallet.WalletType
+    };
+
+    private async Task EditWalletAction(WorkWithWalletModal.WalletEditModel walletModel)
+    {
+        var result = await Mediator.Send(new EditWallet.Command(Wallet.Id, walletModel.Title, walletModel.Description, walletModel.WalletType));
+        error = result.Error;
+        if (!error.HasValue)
+        {
+            await WalletUpdated.InvokeAsync();
+        }
+    }
+
+}

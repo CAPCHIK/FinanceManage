@@ -1,4 +1,5 @@
 ﻿using FinanceManage.CQRS.Queries;
+using FinanceManage.Site.Shared;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -30,7 +31,7 @@ namespace FinanceManage.Site.Server.Controllers
         public async Task<ActionResult<AverageSpending.Result>> GetWeekSpendingAsync([FromQuery] AverageSpending.Command command)
         {
             var userHasAccess = await mediator.Send(
-                new GetUserHasAccessToChat.Command(int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value), command.ChatId));
+                new GetUserHasAccessToChat.Command(User.GetUserId(), command.ChatId));
             if (!userHasAccess)
             {
                 return Forbid();

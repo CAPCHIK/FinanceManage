@@ -38,6 +38,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AntDesign.Charts", "ant-des
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinanceManage.Telegram.Shared", "FinanceManage\FinanceManage.Telegram.Shared\FinanceManage.Telegram.Shared.csproj", "{8D2DDB54-92AA-4F1E-A9F1-92620BF2A87C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{0FE90296-729E-48F7-B3FF-5497270AAC53}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -98,6 +100,10 @@ Global
 		{8D2DDB54-92AA-4F1E-A9F1-92620BF2A87C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D2DDB54-92AA-4F1E-A9F1-92620BF2A87C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D2DDB54-92AA-4F1E-A9F1-92620BF2A87C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FE90296-729E-48F7-B3FF-5497270AAC53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FE90296-729E-48F7-B3FF-5497270AAC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FE90296-729E-48F7-B3FF-5497270AAC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FE90296-729E-48F7-B3FF-5497270AAC53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

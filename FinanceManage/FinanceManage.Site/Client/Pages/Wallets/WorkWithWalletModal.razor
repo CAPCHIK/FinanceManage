@@ -1,0 +1,112 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using FinanceManage.Shared
+@{
+    RenderFragment footer =
+    @<Space>
+        <SpaceItem><Button Disabled="saving" OnClick="() => visible=false">Отмена</Button></SpaceItem>
+    </Space>
+    ;
+}
+<Modal Title="@Title"
+       Visible="visible"
+       Closable="false"
+       Footer="footer"
+       ConfirmLoading="saving">
+    @if (Error() != null)
+    {
+        <Result Status="@Error().Value.errorType"
+            Title="@Error().Value.errorText">
+            <Extra>
+                <Button OnClick="CleanError">Попробовать снова</Button>
+            </Extra>
+        </Result>
+    }
+    else
+    {
+        <Form Model="model"
+          Context="formModel"
+          OnFinish="Submit"
+          LabelColSpan="8"
+          WrapperColSpan="16"
+          Loading="saving"
+          ValidateOnChange>
+            <FormItem Label="Название">
+                <Input @bind-Value="formModel.Title" />
+            </FormItem>
+            <FormItem Label="Описание">
+                <Input @bind-Value="formModel.Description" />
+            </FormItem>
+            <FormItem Label="Тип">
+                <RadioGroup @bind-Value="@formModel.WalletType">
+                    <Radio RadioButton Value="@WalletType.Passive">Пассив</Radio>
+                    <Radio RadioButton Value="@WalletType.Active">Актив</Radio>
+                </RadioGroup>
+            </FormItem>
+            <FormItem WrapperColOffset="8" WrapperColSpan="16">
+                <Button HtmlType="submit" Type="@ButtonType.Primary">
+                    @FormSubmitText
+                </Button>
+            </FormItem>
+        </Form>
+    }
+</Modal>
+@code {
+
+
+    private bool visible = false;
+    private bool saving = false;
+    private WalletEditModel model;
+
+    [Parameter]
+    public string Title { get; set; }
+    [Parameter]
+    public string FormSubmitText { get; set; }
+    [Parameter]
+    public Func<(string errorType, string errorText)?> Error { get; set; }
+
+    [Parameter]
+    public Func<WalletEditModel> OpenModal { get; set; }
+    [Parameter]
+    public Action CleanError { get; set; }
+    [Parameter]
+    public Func<WalletEditModel, Task> PrimaryButtonAction { get; set; }
+
+    private async Task Submit()
+    {
+        saving = true;
+        try
+        {
+            await PrimaryButtonAction(model);
+            if (!Error().HasValue)
+            {
+                visible = false;
+            }
+        }
+        finally
+        {
+            saving = false;
+            StateHasChanged();
+        }
+    }
+
+    public void ShowModal()
+    {
+        CleanError();
+        model = OpenModal();
+        visible = true;
+    }
+
+    public class WalletEditModel
+    {
+        private string title;
+        [Required]
+        [MaxLength(50)]
+        public string Title { get => title; set { title = value?.Trim(); } }
+        private string description;
+
+        [MaxLength(100)]
+        public string Description { get => description; set { description = value?.Trim(); } }
+        [Required]
+        public WalletType WalletType { get; set; }
+    }
+}

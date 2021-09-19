@@ -1,0 +1,46 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using FinanceManage.CQRS.Commands
+@using FinanceManage.Shared
+@inject IMediator Mediator
+
+<WorkWithWalletModal @ref="modal"
+                     Title="Новый кошелёк"
+                     FormSubmitText="Создать кошелёк"
+                     Error="(() => Error)"
+                     OpenModal="(() => new WorkWithWalletModal.WalletEditModel())"
+                     CleanError="CleanError"
+                     PrimaryButtonAction="PrimaryButtonAction" />
+
+<Button OnClick="() => modal.ShowModal()">Создать кошелек</Button>
+@code {
+    [Parameter]
+    public long ChatId { get; set; }
+    [Parameter]
+    public EventCallback WalletCreated { get; set; }
+    
+    private WorkWithWalletModal modal;
+
+    private void CleanError()
+    {
+        error = null;
+    }
+    private CreateWallet.ErrorReason? error;
+
+    private (string errorType, string errorText)? Error => error switch
+    {
+        CreateWallet.ErrorReason.TitleExists => ("warning", "Название кошелька уже занято"),
+        null => null,
+        _ => ("error", "Непредвиденная ошибка")
+    };
+
+    private async Task PrimaryButtonAction(WorkWithWalletModal.WalletEditModel walletModel)
+    {
+        var result = await Mediator.Send(new CreateWallet.Command(walletModel.Title, walletModel.Description, walletModel.WalletType, ChatId));
+        error = result.Error;
+        if (!error.HasValue)
+        {
+            await WalletCreated.InvokeAsync();
+        }
+    }
+
+}

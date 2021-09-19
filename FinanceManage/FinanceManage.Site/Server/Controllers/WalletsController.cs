@@ -71,5 +71,22 @@ namespace FinanceManage.Site.Server.Controllers
 
             return await mediator.Send(command with { TelegramChatId = chatId });
         }
+
+        [HttpPost("savebalances/{chatId:long}")]
+        public async Task<ActionResult<SaveWalletBalances.Result>> SaveBalances(
+            long chatId,
+            [FromBody] SaveWalletBalances.Command command)
+        {
+            var userId = int.Parse(User.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier).Value);
+            var userHasAccess = await mediator.Send(
+               new GetUserHasAccessToChat.Command(userId, chatId));
+
+            if (!userHasAccess)
+            {
+                return Forbid();
+            }
+
+            return await mediator.Send(command with { AuthorId = userId, ChatId = chatId });
+        }
     }
 }

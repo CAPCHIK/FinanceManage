@@ -26,8 +26,12 @@ namespace FinanceManage.CQRS.Handlers.Server
                .Wallets
                .Where(w => w.TelegramChatId == request.TelegramChatId)
                .OrderBy(w => w.Title)
-               .Select(w => new ResponseObject(w.Id, w.Title, w.Description, w.WalletType, w.History.Max(wh => wh.Sum)))
-               .ToListAsync();
+               .Select(w => new ResponseObject(w.Id, w.Title, w.Description, w.WalletType,
+                       w.History
+                        .OrderByDescending(h => h.Date)
+                        .First()
+                        .Sum))
+               .ToListAsync(cancellationToken: cancellationToken);
             return wallets;
         }
     }

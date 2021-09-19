@@ -3,11 +3,17 @@
 @attribute [Authorize]
 
 @inject IMediator Mediator
-
 <PageHeader Title="Кошельки">
     <PageHeaderExtra>
         <CreateWalletButton ChatId="ChatId" WalletCreated="LoadList" />
-        <AddNewValuesButton Wallets="wallets"/>
+        <AuthorizeView>
+            <Authorized>
+                <AddNewValuesButton Wallets="wallets" 
+                TelegramChatId="ChatId" 
+                TelegramUserId="context.User.GetUserId()"
+                BalanceUpdated="LoadList"/>
+            </Authorized>
+        </AuthorizeView>
 </PageHeaderExtra>
 </PageHeader>
 

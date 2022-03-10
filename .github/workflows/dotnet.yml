@@ -48,11 +48,6 @@ jobs:
       - name: Log into registry
         if: ${{ github.ref == 'refs/heads/master' }}
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-      - name: Delete old package
-        if: ${{ github.ref == 'refs/heads/master' }}
-        uses: actions/delete-package-versions@v1
-        with:
-          package-name: ${{ matrix.package-id }}
       - name: Push image
         if: ${{ github.ref == 'refs/heads/master' }}
         env:

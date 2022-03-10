@@ -5,9 +5,17 @@
 @inject IMediator Mediator
 <PageHeader Title="Кошельки">
     <PageHeaderSubtitle>
-        <Statistic Title="Всего" Value="@(wallets?.Sum(w => w.Balance).ToString() ?? "...")" Suffix="₽" />
-        <Statistic Title="Актив" Value="@(wallets?.Where(w => w.WalletType == WalletType.Active).Sum(w => w.Balance).ToString() ?? "...")" Suffix="₽" />
-        <Statistic Title="Пассив" Value="@(wallets?.Where(w => w.WalletType == WalletType.Passive).Sum(w => w.Balance).ToString() ?? "...")" Suffix="₽" />
+        <Space Direction="DirectionVHType.Horizontal">
+            <SpaceItem>
+                <Statistic Title="Всего" Value="@(wallets?.Sum(w => w.Balance).ToString() ?? "...")" Suffix="₽" />
+            </SpaceItem>
+            <SpaceItem>
+                <Statistic Title="Актив" Value="@(wallets?.Where(w => w.WalletType == WalletType.Active).Sum(w => w.Balance).ToString() ?? "...")" Suffix="₽" />
+            </SpaceItem>
+            <SpaceItem>
+                <Statistic Title="Пассив" Value="@(wallets?.Where(w => w.WalletType == WalletType.Passive).Sum(w => w.Balance).ToString() ?? "...")" Suffix="₽" />
+            </SpaceItem>
+        </Space>
     </PageHeaderSubtitle>
     <PageHeaderExtra>
         <CreateWalletButton ChatId="ChatId" WalletCreated="LoadList" />
